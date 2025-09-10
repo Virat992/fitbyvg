@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (Firebase API keys, etc.)
+.env
+.env.local
+.env.*.local
+
+# Firebase functions / cache (if you add functions later)
+firebase-debug.log
+.firebase/
+
+# Tailwind / Vite build cache
+.vite/
+
+# Optional: Mac/Linux swap files
+*.swp
+
