@@ -12,17 +12,20 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected route */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <PrivateRoute>
-              <App />
+              <App /> {/* Dashboard */}
             </PrivateRoute>
           }
         />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/d1" element={<LandingPage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>
