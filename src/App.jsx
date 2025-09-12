@@ -4,10 +4,17 @@ import { collection, getDoc, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 import { signOut } from "firebase/auth";
 import { auth } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function App() {
-  const handleLogout = () => {
-    signOut(auth);
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed: ", error);
+    }
   };
 
   return (

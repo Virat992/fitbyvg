@@ -29,17 +29,10 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="w-full bg-white min-h-screen flex flex-col items-center">
+    <div className="w-full bg-cyan-50 min-h-screen flex flex-col items-center py-4">
       {/* Header */}
       <div className="flex flex-col items-center">
-        <p className="text-[15px] font-bold text-gray-700">Welcome to</p>
-        {/* 
-        <img
-          className="w-[90px] sm:w-[150px] mt-4"
-          src="/Images/main-logo.png"
-          alt="Fitbyvg"
-        />
-        */}
+        <p className="text-[15px] font-bold text-gray-600">Welcome to</p>
         <p
           className="text-[40px] font-bold text-cyan-600"
           style={{ fontFamily: "'Roboto', cursive" }}
@@ -49,36 +42,46 @@ export default function LandingPage() {
       </div>
 
       {/* Carousel */}
-      <div className="w-full h-[360px] sm:h-[290px] my-4">
+      <div className="w-full h-[370px] sm:h-[360px] my-2 px-3">
         <div
           ref={cardsRef}
-          className="flex overflow-x-auto gap-4 snap-x snap-mandatory px-1 scrollbar-hide"
+          className="flex overflow-x-auto gap-4 snap-x snap-mandatory px-1 scrollbar-hide scroll-smooth"
           onScroll={handleScroll}
         >
           {cards.map((card, index) => (
             <div
               key={index}
-              className="flex-shrink-0 w-72 snap-center rounded-3xl overflow-hidden"
+              className="flex-shrink-0 w-[100%] h-90 px-0 snap-center rounded-3xl overflow-hidden shadow-md relative"
             >
+              {/* Card Image */}
               <img
                 src={card.img}
                 alt="Card"
-                className="w-full h-72 object-cover rounded-3xl"
+                className="w-full h-100 sm:h-[340px] object-cover"
               />
-              <p className="text-center text-[20px] font-bold p-2 bg-white whitespace-pre-line">
+              {/* Fade Overlay */}
+              <div
+                className="absolute bottom-0 left-0 w-full h-[95px] bg-white/100 backdrop-blur-3xl"
+                style={{
+                  WebkitMaskImage:
+                    "linear-gradient(to top, black 70%, transparent 100%)",
+                }}
+              />
+              <p className="absolute bottom-2 w-full text-center text-[19px] font-bold text-gray-900 px-6 leading-snug">
                 {card.text}
               </p>
             </div>
           ))}
         </div>
       </div>
+
       {/* Dots */}
       <div className="flex justify-center gap-2 mt-0">
         {cards.map((_, index) => (
           <span
             key={index}
-            className={`w-1 h-1 rounded-full ${
-              currentCard === index ? "bg-cyan-600" : "bg-gray-300"
+            className={`w-2 h-2 rounded-full ${
+              currentCard === index ? "bg-cyan-600" : "bg-cyan-300"
             }`}
           />
         ))}
@@ -88,17 +91,17 @@ export default function LandingPage() {
       <div className="flex flex-col justify-center items-center gap-4 px-4 w-full max-w-[420px] mt-6 mb-4">
         <button
           onClick={() => navigate("/signup")}
-          className="w-full bg-cyan-600 text-white font-bold py-3 rounded-3xl active:bg-cyan-700 transition"
+          className="w-full bg-cyan-600 text-white font-bold py-3 rounded-3xl active:bg-cyan-700 transition hover:bg-cyan-700 cursor-pointer shadow-md"
         >
           Sign up for free
         </button>
         <button
           onClick={() => navigate("/login")}
-          className=" w-full py-1 rounded-3xl text-cyan-600 font-bold active:bg-gray-300 transition"
+          className="w-full py-3 rounded-3xl text-cyan-600 font-bold border border-cyan-600 active:bg-cyan-100 transition cursor-pointer"
         >
           Log In
         </button>
-        <p className="text-cyan-600 text-sm sm:text-base text-center">
+        <p className="text-gray-600 text-sm sm:text-base text-center">
           Made with ❤️ by Virat Gajjar
         </p>
       </div>
