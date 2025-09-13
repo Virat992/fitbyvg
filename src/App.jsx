@@ -1,31 +1,34 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import { collection, getDoc, getDocs } from "firebase/firestore";
-import { db } from "./firebase";
-import { signOut } from "firebase/auth";
-import { auth } from "./firebase";
-import { useNavigate } from "react-router-dom";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./styles/index.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Signup from "./pages/Signup.jsx";
+import Login from "./pages/Login.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
+import PrivateRoute from "./routes/PrivateRoute.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 
-export default function App() {
-  const navigate = useNavigate();
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed: ", error);
-    }
-  };
-
+function App() {
   return (
-    <div className="h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
-      <h1 className="text-4xl font-bold text-white">Hello Anshde</h1>
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 px-4 py-2 rounded text-white"
-      >
-        Logout
-      </button>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected route */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
+
+export default App;
