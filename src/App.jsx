@@ -1,11 +1,11 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
 import "./styles/index.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
+import Onboarding from "./pages/Onboarding.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
+import OnboardingRoute from "./routes/OnboardingRoute.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
 function App() {
@@ -16,6 +16,16 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        
+        {/* Onboarding route - requires authentication and redirects if already completed */}
+        <Route
+          path="/onboarding"
+          element={
+            <OnboardingRoute>
+              <Onboarding />
+            </OnboardingRoute>
+          }
+        />
 
         {/* Protected route */}
         <Route

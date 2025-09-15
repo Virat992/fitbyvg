@@ -73,7 +73,7 @@ export default function Signup() {
         password
       );
       await setDoc(doc(db, "users", email), { createdAt: new Date() });
-      navigate("/");
+      navigate("/onboarding");
     } catch (err) {
       if (err.code === "auth/email-already-in-use")
         setErrors((prev) => ({ ...prev, email: "Email already registered" }));
@@ -104,7 +104,7 @@ export default function Signup() {
             label="Email"
             type="email"
             value={email}
-            onChange={setEmail}
+            onChange={(e) => setEmail(e.target.value)}
             error={errors.email}
             placeholder="ex: jon.smith@email.com"
           />
@@ -113,7 +113,7 @@ export default function Signup() {
             label="Password"
             type="password"
             value={password}
-            onChange={setPassword}
+            onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
             placeholder="Choose a 6-digit password"
           />
@@ -122,7 +122,7 @@ export default function Signup() {
             label="Re-enter Password"
             type="password"
             value={rePassword}
-            onChange={setRePassword}
+            onChange={(e) => setRePassword(e.target.value)}
             error={errors.rePassword}
             placeholder="Confirm password"
           />

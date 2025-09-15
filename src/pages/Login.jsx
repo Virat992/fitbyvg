@@ -39,8 +39,25 @@ export default function Login() {
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // Check onboarding status
+      const userDoc = await getDoc(doc(db, "users", email));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.onboardingCompleted) {
+          navigate("/dashboard");
+        } else {
+          navigate("/onboarding");
+        }
+      } else {
+        // User document doesn't exist, needs onboarding
+        navigate("/onboarding");
+      }
     } catch (error) {
       switch (error.code) {
         case "auth/user-not-found":

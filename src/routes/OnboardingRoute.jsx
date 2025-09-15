@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { useState, useEffect } from "react";
 
-export default function PrivateRoute({ children }) {
+export default function OnboardingRoute({ children }) {
   const [user, loading] = useAuthState(auth);
   const [onboardingStatus, setOnboardingStatus] = useState(null);
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
@@ -23,7 +23,7 @@ export default function PrivateRoute({ children }) {
           }
         } catch (error) {
           console.error("Error checking onboarding status:", error);
-          // On error, assume onboarding is needed
+          // On error, allow onboarding
           setOnboardingStatus(false);
         }
       }
@@ -49,9 +49,9 @@ export default function PrivateRoute({ children }) {
     return <Navigate to="/" />;
   }
 
-  // If user is authenticated but hasn't completed onboarding
-  if (onboardingStatus === false) {
-    return <Navigate to="/onboarding" />;
+  // If user has already completed onboarding, redirect to dashboard
+  if (onboardingStatus === true) {
+    return <Navigate to="/dashboard" />;
   }
 
   return children;
