@@ -22,8 +22,7 @@ const STEPS = {
   HEALTH_HABITS: 3,
   PHYSICAL_INFO: 4,
   MEAL_PLANNING: 5,
-  STEADY_PLANNER: 6,
-  WEIGHT_LOSS_BARRIERS: 7,
+  WEIGHT_LOSS_BARRIERS: 6,
 };
 
 const TOTAL_STEPS = Object.keys(STEPS).length;
@@ -102,7 +101,9 @@ export default function Onboarding() {
       case STEPS.GOALS:
         return <Goals {...commonProps} />;
       case STEPS.MOTIVATIONAL_MESSAGE:
-        return <MotivationalMessage {...commonProps} goals={onboardingData.goals} />;
+        return (
+          <MotivationalMessage {...commonProps} goals={onboardingData.goals} />
+        );
       case STEPS.HEALTH_HABITS:
         return <HealthHabits {...commonProps} />;
       case STEPS.PHYSICAL_INFO:

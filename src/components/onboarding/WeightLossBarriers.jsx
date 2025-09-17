@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { FaArrowLeft, FaCheck } from "react-icons/fa";
-import Button from "../Button";
+import BottomNavigation from "../BottomNavigation"; // Using same BottomNavigation
 
 const barrierOptions = [
   "Lack of time",
@@ -33,86 +32,68 @@ export default function WeightLossBarriers({ onNext, onBack }) {
     });
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleNext();
-    }
-  };
-
   return (
-    <div className="w-full h-screen flex flex-col">
-      <div className="w-full max-w-md mx-auto px-4 flex flex-col h-full">
-        {/* Header */}
-        <div className="pt-4 pb-6 flex-shrink-0">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Goals</h1>
-        </div>
+    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
+      {/* Header */}
+      <div className="px-4 pt-6 mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Past Hurdles</h1>
+      </div>
 
-        {/* Main Content - Scrollable */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-shrink-0 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
-              In the past, what have been your barriers to losing weight?
-            </h2>
-            <p className="text-gray-500 text-sm">Select all that apply.</p>
-          </div>
+      {/* Main Content */}
+      <div className="flex-1 px-4 overflow-y-auto scrollbar-hide">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
+          In the past, what have been your barriers to losing weight?
+        </h2>
+        <p className="text-gray-500 text-sm mb-4">Select all that apply.</p>
 
-          {/* Barriers List - Scrollable Container */}
-          <div className="flex-1 overflow-y-auto pb-28 -mr-4 pr-4">
-            <div className="space-y-4">
-              {barrierOptions.map((barrier) => (
-                <button
-                  key={barrier}
-                  onClick={() => handleBarrierToggle(barrier)}
-                  onKeyPress={handleKeyPress}
-                  className={`w-full p-4 rounded-xl border-2 text-left font-medium text-lg transition-all ${
+        {/* Barriers List */}
+        <div className="space-y-4 pb-4">
+          {barrierOptions.map((barrier) => (
+            <button
+              key={barrier}
+              onClick={() => handleBarrierToggle(barrier)}
+              className={`w-full p-4 rounded-xl border-2 text-left font-medium text-lg transition-all ${
+                selectedBarriers.includes(barrier)
+                  ? "border-cyan-500 bg-gray-50"
+                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-gray-900">{barrier}</span>
+                <div
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     selectedBarriers.includes(barrier)
-                      ? "border-blue-500 bg-gray-50"
-                      : "border-gray-200 bg-gray-50 hover:border-gray-300"
+                      ? "border-cyan-500 bg-cyan-500"
+                      : "border-gray-300"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-900 pr-4">{barrier}</span>
-                    <div
-                      className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                        selectedBarriers.includes(barrier)
-                          ? "border-blue-500 bg-blue-500"
-                          : "border-gray-300"
-                      }`}
+                  {selectedBarriers.includes(barrier) && (
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
                     >
-                      {selectedBarriers.includes(barrier) && (
-                        <FaCheck className="text-white text-xs" />
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </div>
+              </div>
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Navigation - Sticky at bottom with z-index */}
-        <div
-          className="sticky bottom-0 z-50 border-t border-gray-100 pt-6 pb-6 
-             bg-gradient-to-b from-cyan-50  to-cyan-100"
-        >
-          <div className="max-w-md mx-auto px-1">
-            <div className="flex  items-center justify-between">
-              <button
-                onClick={onBack}
-                className="w-12 h-12 flex cursor-pointer items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                <FaArrowLeft className="text-gray-600" />
-              </button>
-
-              <button
-                onClick={handleNext}
-                className="flex-1 ml-4 py-3 px-9 rounded-full cursor-pointer font-semibold text-white transition-all bg-cyan-600 hover:bg-cyan-700"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Bottom Navigation */}
+      <div className="px-4 py-6 pb-16">
+        <BottomNavigation
+          onBack={onBack}
+          onNext={handleNext}
+          nextDisabled={selectedBarriers.length === 0}
+        />
       </div>
     </div>
   );

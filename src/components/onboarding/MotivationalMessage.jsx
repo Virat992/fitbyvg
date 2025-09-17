@@ -12,7 +12,6 @@ import {
   FaChild,
 } from "react-icons/fa";
 
-// Goal-specific motivational content
 const MOTIVATIONAL_CONTENT = {
   "lose-fat": {
     icon: FaBalanceScale,
@@ -124,21 +123,7 @@ const MOTIVATIONAL_CONTENT = {
     encouragement:
       "You're not just changing your body, you're upgrading your entire life! ✨",
   },
-};
-
-// Default content if no specific goals match
-const DEFAULT_CONTENT = {
-  icon: FaHeartbeat,
-  title: "Your Fitness Journey Begins!",
-  subtitle: "Ready to start?",
-  message:
-    "Every fitness journey is unique, but they all start with one decision.",
-  description:
-    "We'll be with you every step of the way, providing guidance, motivation, and the tools you need to reach your goals.",
-  visualization: "general-progress",
-  encouragement:
-    "The best time to start was yesterday. The second best time is now! 🚀",
-};
+}; // Default content if no specific goals match const DEFAULT_CONTENT = { icon: FaHeartbeat, title: "Your Fitness Journey Begins!", subtitle: "Ready to start?", message: "Every fitness journey is unique, but they all start with one decision.", description: "We'll be with you every step of the way, providing guidance, motivation, and the tools you need to reach your goals.", visualization: "general-progress", encouragement: "The best time to start was yesterday. The second best time is now! 🚀", };
 
 export default function MotivationalMessage({
   firstName,
@@ -146,7 +131,6 @@ export default function MotivationalMessage({
   onNext,
   onBack,
 }) {
-  // Determine which motivational content to show based on primary goal
   const primaryGoal = goals.length > 0 ? goals[0] : null;
   const content = primaryGoal
     ? MOTIVATIONAL_CONTENT[primaryGoal.id] || DEFAULT_CONTENT
@@ -163,7 +147,6 @@ export default function MotivationalMessage({
               className="w-full h-full"
               preserveAspectRatio="none"
             >
-              {/* Grid background */}
               <defs>
                 <pattern
                   id="grid"
@@ -180,8 +163,6 @@ export default function MotivationalMessage({
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#grid)" />
-
-              {/* Progress curve */}
               <path
                 d="M0,70 Q50,65 75,60 Q125,55 150,50 Q200,45 225,40 Q275,35 300,30"
                 stroke="#6366f1"
@@ -189,10 +170,7 @@ export default function MotivationalMessage({
                 fill="none"
                 strokeLinecap="round"
               />
-
-              {/* Start point */}
               <circle cx="15" cy="65" r="4" fill="#6366f1" />
-              {/* Goal point */}
               <circle cx="285" cy="32" r="4" fill="#10b981" />
             </svg>
           </div>
@@ -204,7 +182,6 @@ export default function MotivationalMessage({
       );
     }
 
-    // Default visualization for other goal types
     return (
       <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 backdrop-blur-sm border border-gray-700 flex flex-col items-center">
         <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3 sm:mb-4">
@@ -223,52 +200,48 @@ export default function MotivationalMessage({
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
-      <div className="w-full max-w-full sm:max-w-md mx-auto px-3 sm:px-4 min-h-screen flex flex-col pb-6 sm:pb-4">
-        {/* Header */}
-        <div className="py-3 sm:py-4 mb-0 sm:mb-8">
-          <h1 className="text-lg sm:text-xl font-medium text-gray-300">
-            Motivation
-          </h1>
-        </div>
+    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
+      {/* Header */}
+      <div className="px-4 pt-6 mb-6">
+        <h1 className="text-lg sm:text-xl font-medium text-gray-300">
+          Motivation
+        </h1>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="mb-2 sm:mb-8">
-            <p className="text-gray-400 text-base sm:text-lg mb-3 sm:mb-4">
-              {content.subtitle}
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-              {content.title}
-            </h2>
-            <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
-              {content.message}
-            </p>
-            <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
-              {content.description}
-            </p>
-          </div>
+      {/* Main Content (scrollable) */}
+      <div className="flex-1 px-4 overflow-y-auto scrollbar-hide">
+        <p className="text-gray-400 text-base sm:text-lg mb-3 sm:mb-4">
+          {content.subtitle}
+        </p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+          {content.title}
+        </h2>
+        <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
+          {content.message}
+        </p>
+        <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
+          {content.description}
+        </p>
 
-          {/* Visualization */}
-          {renderVisualization()}
-        </div>
+        {/* Visualization */}
+        {renderVisualization()}
+      </div>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between py-4 sm:py-6 mt-4 sm:mt-6 sticky bottom-0 bg-gray-900/80 backdrop-blur-md rounded-t-xl px-2 sm:px-4">
-          <button
-            onClick={onBack}
-            className="w-10 h-10 cursor-pointer sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-gray-700/50 hover:bg-gray-600/50 transition-colors backdrop-blur-sm border border-gray-600"
-          >
-            <FaArrowLeft className="text-white text-sm sm:text-base" />
-          </button>
+      {/* ✅ Fixed Bottom Navigation (consistent with Welcome & Goals) */}
+      <div className="px-4 py-6 pb-5 flex items-center gap-4">
+        <button
+          onClick={onBack}
+          className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-700/50 hover:bg-gray-600/50 transition-colors backdrop-blur-sm border border-gray-600"
+        >
+          <FaArrowLeft className="text-white text-base" />
+        </button>
 
-          <button
-            onClick={onNext}
-            className="flex-1 cursor-pointer ml-3 sm:ml-4 py-3 sm:py-4 px-4 sm:px-8 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700  text-white shadow-lg text-sm sm:text-base"
-          >
-            Continue Journey
-          </button>
-        </div>
+        <button
+          onClick={onNext}
+          className="flex-1 cursor-pointer py-4 px-6 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg text-base"
+        >
+          Continue Journey
+        </button>
       </div>
     </div>
   );

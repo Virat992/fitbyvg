@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { FaArrowLeft } from "react-icons/fa";
-import Button from "../Button";
+import BottomNavigation from "../BottomNavigation";
 
 const GOAL_OPTIONS = [
   {
@@ -60,13 +59,10 @@ export default function Goals({ firstName, onNext, onBack }) {
 
   const toggleGoal = (goal) => {
     setSelectedGoals((prev) => {
-      const goalId = goal.id;
-      if (prev.find((g) => g.id === goalId)) {
-        return prev.filter((g) => g.id !== goalId);
-      } else if (prev.length < 3) {
-        return [...prev, goal];
-      }
-      return prev;
+      const alreadySelected = prev.some((g) => g.id === goal.id);
+      if (alreadySelected) return prev.filter((g) => g.id !== goal.id);
+      if (prev.length >= 3) return prev;
+      return [...prev, goal];
     });
   };
 
@@ -77,14 +73,14 @@ export default function Goals({ firstName, onNext, onBack }) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
+    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
-      <div className="mb-8">
+      <div className="px-4 pt-6 mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Goals</h1>
       </div>
 
-      {/* Main Content with Fixed Height */}
-      <div className="mb-8">
+      {/* Main Content (scrollable if needed) */}
+      <div className="flex-1 px-4 overflow-y-auto scrollbar-hide">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Hey, {firstName}. <span>👋</span> Let's start with your goals.
         </h2>
@@ -92,8 +88,8 @@ export default function Goals({ firstName, onNext, onBack }) {
           Select up to 3 that are important to you.
         </p>
 
-        {/* Goals List - Scrollable with max height to avoid navigation */}
-        <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
+        {/* Goals List */}
+        <div className="space-y-3 pr-2 pb-4">
           {GOAL_OPTIONS.map((goal) => {
             const isSelected = selectedGoals.find((g) => g.id === goal.id);
             return (
@@ -102,7 +98,7 @@ export default function Goals({ firstName, onNext, onBack }) {
                 onClick={() => toggleGoal(goal)}
                 className={`flex items-start p-4 rounded-xl cursor-pointer transition-colors ${
                   isSelected
-                    ? "bg-blue-50 border-2 border-blue-500"
+                    ? "bg-blue-50 border-2 border-cyan-600"
                     : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
                 }`}
               >
@@ -115,7 +111,7 @@ export default function Goals({ firstName, onNext, onBack }) {
                 <div
                   className={`w-5 h-5 border-2 rounded mt-1 ${
                     isSelected
-                      ? "border-blue-500 bg-blue-500"
+                      ? "border-cyan-600 bg-cyan-600"
                       : "border-gray-300"
                   } flex items-center justify-center flex-shrink-0`}
                 >
@@ -139,26 +135,13 @@ export default function Goals({ firstName, onNext, onBack }) {
         </div>
       </div>
 
-      {/* Navigation - Fixed at bottom like Welcome */}
-      <div className="flex items-center mt-0 justify-between pt-0">
-        <button
-          onClick={onBack}
-          className="w-12 h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-        >
-          <FaArrowLeft className="text-gray-600" />
-        </button>
-
-        <div className="flex-1 ml-4">
-          <Button
-            onClick={handleNext}
-            disabled={selectedGoals.length === 0}
-            variant={selectedGoals.length > 0 ? "primary" : "gray"}
-            size="md"
-            className="px-6 py-3"
-          >
-            Next
-          </Button>
-        </div>
+      {/* ✅ Fixed Bottom Navigation */}
+      <div className="px-4 py-6 pb-16">
+        <BottomNavigation
+          onBack={onBack}
+          onNext={handleNext}
+          nextDisabled={selectedGoals.length === 0}
+        />
       </div>
     </div>
   );

@@ -7,9 +7,9 @@ export default function OnboardingProgress({ currentStep, totalSteps }) {
             key={index}
             className={`flex-1 h-2 rounded-full ${
               index < currentStep
-                ? "bg-green-500"
+                ? "bg-cyan-600"
                 : index === currentStep - 1
-                ? "bg-green-500"
+                ? "bg-cyan-600"
                 : "bg-gray-200"
             }`}
           />

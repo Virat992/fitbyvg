@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { FaArrowLeft } from "react-icons/fa";
-import Button from "../Button";
+import BottomNavigation from "../BottomNavigation";
 
 export default function Welcome({ onNext, onBack }) {
   const [firstName, setFirstName] = useState("");
@@ -18,14 +17,14 @@ export default function Welcome({ onNext, onBack }) {
   };
 
   return (
-    <div className="w-full flex flex-col max-w-md mx-auto px-4 py-6 bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
+    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
-      <div className="mb-8">
+      <div className="px-4 pt-6 mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome</h1>
       </div>
 
-      {/* Main Content */}
-      <div className="mb-66">
+      {/* Main Content (scrollable if needed) */}
+      <div className="flex-1 px-4 overflow-y-auto">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           First, what can we call you?
         </h2>
@@ -34,7 +33,7 @@ export default function Welcome({ onNext, onBack }) {
         </p>
 
         {/* Input Section */}
-        <div className="">
+        <div>
           <label className="block text-gray-600 text-sm mb-3">
             Preferred first name
           </label>
@@ -43,33 +42,19 @@ export default function Welcome({ onNext, onBack }) {
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Virat"
-            className="w-full px-4 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-gray-50"
+            className="w-full px-4 py-4 text-lg border border-gray-200 rounded-xl focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 bg-gray-50"
             autoFocus
           />
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between pt-4">
-        <button
-          onClick={onBack}
-          className="w-12 h-12 flex cursor-pointer items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-        >
-          <FaArrowLeft className="text-gray-600" />
-        </button>
-
-        <div className="flex-1 ml-4">
-          <Button
-            onClick={handleNext}
-            disabled={!firstName.trim()}
-            variant={firstName.trim() ? "primary" : "gray"}
-            size="md"
-            className="px-6 py-3"
-          >
-            Next
-          </Button>
-        </div>
+      {/* ✅ Fixed Bottom Navigation */}
+      <div className="px-4 py-6 pb-16">
+        <BottomNavigation
+          onBack={onBack}
+          onNext={handleNext}
+          nextDisabled={!firstName.trim()}
+        />
       </div>
     </div>
   );
