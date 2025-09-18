@@ -1,5 +1,8 @@
 import { useState } from "react";
 import BottomNavigation from "../BottomNavigation";
+import { signOut } from "firebase/auth";
+import { auth } from "../../services/firebase";
+import { useNavigate } from "react-router-dom";
 
 const RECOMMENDED_HABITS = [
   "Eat more protein",
@@ -27,6 +30,7 @@ const MORE_HABITS = [
 
 export default function HealthHabits({ firstName, onNext, onBack }) {
   const [selectedHabits, setSelectedHabits] = useState([]);
+  const navigate = useNavigate();
 
   const toggleHabit = (habit) => {
     setSelectedHabits((prev) =>
@@ -37,6 +41,15 @@ export default function HealthHabits({ firstName, onNext, onBack }) {
   const handleNext = () => {
     if (selectedHabits.length > 0) {
       onNext({ healthHabits: selectedHabits });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/"); // redirect to landing/login page
+    } catch (error) {
+      console.error("Logout failed:", error);
     }
   };
 
@@ -58,8 +71,14 @@ export default function HealthHabits({ firstName, onNext, onBack }) {
   return (
     <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
-      <div className="px-4 pt-6 mb-8">
+      <div className="px-4 pt-6 mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Health Habits</h1>
+        <button
+          onClick={handleLogout}
+          className="text-sm pr-2 font-semibold text-cyan-600 cursor-pointer hover:font-bold"
+        >
+          Logout
+        </button>
       </div>
 
       {/* Main Content (scrollable) */}

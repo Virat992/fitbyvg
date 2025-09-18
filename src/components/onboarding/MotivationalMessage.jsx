@@ -237,7 +237,7 @@ export default function MotivationalMessage({
         </button>
 
         <button
-          onClick={onNext}
+          onClick={() => onNext({})} // pass an empty object or whatever data you want
           className="flex-1 cursor-pointer py-4 px-6 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg text-base"
         >
           Continue Journey

@@ -12,7 +12,8 @@ export default function BottomNavigation({
     <div className="flex items-center justify-between mr-1 px-1 pt-2">
       {/* Back button */}
       <button
-        onClick={onBack}
+        type="button"
+        onClick={() => onBack && onBack()} // ✅ wrapped
         className="w-12 cursor-pointer h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
       >
         <FaArrowLeft className="text-gray-600" />
@@ -21,7 +22,7 @@ export default function BottomNavigation({
       {/* Next button */}
       <div className="flex-1 ml-4">
         <Button
-          onClick={onNext}
+          onClick={() => onNext && onNext()} // ✅ wrapped
           disabled={nextDisabled}
           variant={nextDisabled ? "gray" : "primary"}
           size="md"

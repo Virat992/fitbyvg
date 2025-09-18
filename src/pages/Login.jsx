@@ -39,24 +39,23 @@ export default function Login() {
 
     try {
       setLoading(true);
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(auth, email, password);
 
       // Check onboarding status
       const userDoc = await getDoc(doc(db, "users", email));
       if (userDoc.exists()) {
         const userData = userDoc.data();
+
         if (userData.onboardingCompleted) {
           navigate("/dashboard");
         } else {
-          navigate("/onboarding");
+          // Resume onboarding from last step
+          const step = userData.onboardingStep ?? 0;
+          navigate("/onboarding", { state: { startStep: step } });
         }
       } else {
         // User document doesn't exist, needs onboarding
-        navigate("/onboarding");
+        navigate("/onboarding", { state: { startStep: 0 } });
       }
     } catch (error) {
       switch (error.code) {
@@ -133,7 +132,7 @@ export default function Login() {
         {/* Form Card */}
         <FormCard>
           {(errors.reset || showResetSuccess) && (
-            <div className="absolute top-2 left-0  w-full text-center z-10">
+            <div className="absolute top-2 left-0 w-full text-center z-10">
               {errors.reset && <AlertMessage message={errors.reset} />}
               {showResetSuccess && (
                 <AlertMessage

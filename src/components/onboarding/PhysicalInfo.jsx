@@ -1,5 +1,8 @@
 import { useState } from "react";
 import BottomNavigation from "../BottomNavigation";
+import { signOut } from "firebase/auth";
+import { auth } from "../../services/firebase";
+import { useNavigate } from "react-router-dom";
 
 export default function PhysicalInfo({ onNext, onBack }) {
   const [formData, setFormData] = useState({
@@ -7,6 +10,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
     weight: "",
     goalWeight: "",
   });
+  const navigate = useNavigate();
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -27,16 +31,31 @@ export default function PhysicalInfo({ onNext, onBack }) {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/"); // redirect to landing/login page
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   const isFormValid = formData.height && formData.weight && formData.goalWeight;
 
   return (
     <div className="w-full h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       <div className="w-full max-w-md mx-auto flex flex-col h-full">
         {/* Header */}
-        <div className="px-4 pt-6 pb-4">
+        <div className="px-4 pt-6 pb-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Your Physical Stats
           </h1>
+          <button
+            onClick={handleLogout}
+            className="text-sm  font-semibold text-cyan-600 cursor-pointer hover:font-bold"
+          >
+            Logout
+          </button>
         </div>
 
         {/* Main Content - Scrollable */}

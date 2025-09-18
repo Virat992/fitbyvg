@@ -5,7 +5,6 @@ import { auth, db } from "../services/firebase";
 import { FaArrowLeft, FaDumbbell } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { setDoc, doc } from "firebase/firestore";
 
 import Button from "../components/Button";
@@ -67,17 +66,28 @@ export default function Signup() {
 
     try {
       setLoading(true);
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      await setDoc(doc(db, "users", email), { createdAt: new Date() });
+
+      // Initialize user in Firestore with onboarding info
+      await setDoc(doc(db, "users", email), {
+        createdAt: new Date(),
+        onboarding: {}, // empty onboarding object
+        onboardingStep: 0, // start from first step
+        onboardingCompleted: false,
+      });
+
       navigate("/onboarding");
     } catch (err) {
-      if (err.code === "auth/email-already-in-use")
+      if (err.code === "auth/email-already-in-use") {
         setErrors((prev) => ({ ...prev, email: "Email already registered" }));
-      else setErrors((prev) => ({ ...prev, email: err.message }));
+      } else {
+        setErrors((prev) => ({ ...prev, email: err.message }));
+      }
     } finally {
       setLoading(false);
     }
@@ -97,6 +107,7 @@ export default function Signup() {
             <span>Sign Up</span> <FaDumbbell className="text-cyan-600" />
           </p>
         </div>
+
         {/* Form */}
         <FormCard>
           <FormInput
@@ -136,8 +147,8 @@ export default function Signup() {
             Sign Up
           </Button>
         </FormCard>
-        {/* Social */}
-        {/* Social Buttons Card */}{" "}
+
+        {/* Social Signup */}
         <div className="bg-white shadow-md rounded-3xl w-full mt-6 px-6 pt-4 pb-2 flex flex-col items-center">
           <p className="font-semibold text-gray-600 text-[16px]">OR</p>
           <SocialButton

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import BottomNavigation from "../BottomNavigation"; // Using same BottomNavigation
+import { signOut } from "firebase/auth";
+import { auth } from "../../services/firebase";
+import { useNavigate } from "react-router-dom";
 
 const barrierOptions = [
   "Lack of time",
@@ -17,6 +20,7 @@ export default function WeightLossBarriers({ onNext, onBack }) {
     "The regimen was hard to follow",
     "Healthy diets lack variety",
   ]);
+  const navigate = useNavigate();
 
   const handleBarrierToggle = (barrier) => {
     setSelectedBarriers((prev) =>
@@ -32,11 +36,26 @@ export default function WeightLossBarriers({ onNext, onBack }) {
     });
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/"); // redirect to landing/login page
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
-      <div className="px-4 pt-6 mb-8">
+      <div className="px-4 pt-6 mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Past Hurdles</h1>
+        <button
+          onClick={handleLogout}
+          className="text-sm  font-semibold text-cyan-600 cursor-pointer hover:font-bold"
+        >
+          Logout
+        </button>
       </div>
 
       {/* Main Content */}

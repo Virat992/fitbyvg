@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, updateDoc } from "firebase/firestore";
+import { updateDoc, doc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../services/firebase";
 
@@ -12,7 +12,6 @@ import MotivationalMessage from "../components/onboarding/MotivationalMessage";
 import HealthHabits from "../components/onboarding/HealthHabits";
 import PhysicalInfo from "../components/onboarding/PhysicalInfo";
 import MealPlanning from "../components/onboarding/MealPlanning";
-import SteadyPlanner from "../components/onboarding/SteadyPlanner";
 import WeightLossBarriers from "../components/onboarding/WeightLossBarriers";
 
 const STEPS = {
@@ -29,11 +28,6 @@ const TOTAL_STEPS = Object.keys(STEPS).length;
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(STEPS.WELCOME);
-  const [loading, setLoading] = useState(false);
-  const [user] = useAuthState(auth);
-  const navigate = useNavigate();
-
-  // State for collecting onboarding data
   const [onboardingData, setOnboardingData] = useState({
     firstName: "",
     goals: [],
@@ -43,48 +37,42 @@ export default function Onboarding() {
     weightLossBarriers: [],
   });
 
-  const updateOnboardingData = (newData) => {
-    setOnboardingData((prev) => ({ ...prev, ...newData }));
-  };
+  const [user] = useAuthState(auth);
+  const navigate = useNavigate();
 
   const handleNext = (data = {}) => {
-    updateOnboardingData(data);
+    // Merge current state with new data
+    const updatedData = { ...onboardingData, ...data };
 
     if (currentStep < TOTAL_STEPS - 1) {
-      setCurrentStep(currentStep + 1);
+      setOnboardingData(updatedData); // update state
+      setCurrentStep(currentStep + 1); // move to next step
     } else {
-      handleComplete();
+      console.log("handlecomplete is about to be called");
+      handleComplete(updatedData); // use merged data directly
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    } else {
-      navigate("/");
-    }
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
+    else navigate("/");
   };
 
-  const handleComplete = async () => {
+  const handleComplete = async (finalData) => {
     if (!user) return;
-
+    console.log(
+      "Final onboarding data before Firestore update:",
+      onboardingData
+    );
     try {
-      setLoading(true);
-
-      // Save onboarding data to Firebase
       await updateDoc(doc(db, "users", user.email), {
-        onboarding: onboardingData,
+        onboarding: finalData, // ✅ safely save merged data
         onboardingCompleted: true,
         onboardingCompletedAt: new Date(),
       });
-
-      // Navigate to dashboard
       navigate("/dashboard");
     } catch (error) {
       console.error("Error completing onboarding:", error);
-      // Handle error - maybe show an alert
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -110,8 +98,6 @@ export default function Onboarding() {
         return <PhysicalInfo {...commonProps} />;
       case STEPS.MEAL_PLANNING:
         return <MealPlanning {...commonProps} />;
-      case STEPS.STEADY_PLANNER:
-        return <SteadyPlanner {...commonProps} />;
       case STEPS.WEIGHT_LOSS_BARRIERS:
         return <WeightLossBarriers {...commonProps} />;
       default:
@@ -119,15 +105,13 @@ export default function Onboarding() {
     }
   };
 
-  // Don't show progress bar for motivational screens (dark gradient screens)
   const showProgressBar = ![
     STEPS.MOTIVATIONAL_MESSAGE,
-    STEPS.STEADY_PLANNER,
+    // STEADY_PLANNER step doesn't exist in current STEPS, remove if unnecessary
   ].includes(currentStep);
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
-      {/* Progress Indicator - only show on non-motivational screens */}
       {showProgressBar && (
         <div className="pt-4">
           <OnboardingProgress
@@ -136,8 +120,6 @@ export default function Onboarding() {
           />
         </div>
       )}
-
-      {/* Current Step Content */}
       <div className="w-full">{renderCurrentStep()}</div>
     </div>
   );
