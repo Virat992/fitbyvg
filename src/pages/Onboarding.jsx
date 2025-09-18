@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { updateDoc, doc } from "firebase/firestore";
+import { updateDoc, doc, setDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../services/firebase";
 
@@ -58,18 +58,22 @@ export default function Onboarding() {
     else navigate("/");
   };
 
-  const handleComplete = async (finalData) => {
+  const handleComplete = async () => {
     if (!user) return;
-    console.log(
-      "Final onboarding data before Firestore update:",
-      onboardingData
-    );
+
     try {
-      await updateDoc(doc(db, "users", user.email), {
-        onboarding: finalData, // ✅ safely save merged data
-        onboardingCompleted: true,
-        onboardingCompletedAt: new Date(),
-      });
+      // Use setDoc with merge: true to create or update the document safely
+      await setDoc(
+        doc(db, "users", user.email),
+        {
+          onboarding: onboardingData,
+          onboardingCompleted: true,
+          onboardingCompletedAt: new Date(),
+        },
+        { merge: true } // Merge with existing data instead of overwriting
+      );
+
+      // Redirect to dashboard after successful onboarding
       navigate("/dashboard");
     } catch (error) {
       console.error("Error completing onboarding:", error);

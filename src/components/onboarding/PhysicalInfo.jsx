@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 
 export default function PhysicalInfo({ onNext, onBack }) {
   const [formData, setFormData] = useState({
+    gender: "",
+    physicalActivity: "",
     height: "",
     weight: "",
     goalWeight: "",
@@ -20,12 +22,15 @@ export default function PhysicalInfo({ onNext, onBack }) {
   };
 
   const handleNext = () => {
-    if (formData.height && formData.weight && formData.goalWeight) {
+    const { gender, physicalActivity, height, weight, goalWeight } = formData;
+    if (gender && physicalActivity && height && weight && goalWeight) {
       onNext({
         physicalInfo: {
-          height: parseFloat(formData.height),
-          weight: parseFloat(formData.weight),
-          goalWeight: parseFloat(formData.goalWeight),
+          gender,
+          physicalActivity,
+          height: parseFloat(height),
+          weight: parseFloat(weight),
+          goalWeight: parseFloat(goalWeight),
         },
       });
     }
@@ -40,7 +45,12 @@ export default function PhysicalInfo({ onNext, onBack }) {
     }
   };
 
-  const isFormValid = formData.height && formData.weight && formData.goalWeight;
+  const isFormValid =
+    formData.gender &&
+    formData.physicalActivity &&
+    formData.height &&
+    formData.weight &&
+    formData.goalWeight;
 
   return (
     <div className="w-full h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
@@ -52,17 +62,81 @@ export default function PhysicalInfo({ onNext, onBack }) {
           </h1>
           <button
             onClick={handleLogout}
-            className="text-sm  font-semibold text-cyan-600 cursor-pointer hover:font-bold"
+            className="text-sm font-semibold text-cyan-600 cursor-pointer hover:font-bold"
           >
             Logout
           </button>
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-hide">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Just a few more questions
+            Getting to Know You
           </h2>
+
+          {/* Gender Selection */}
+          <div className="mb-6">
+            <label className="block text-gray-600 text-base mb-3">
+              Select your gender
+            </label>
+            <div className="flex gap-4">
+              {["male", "female", "other"].map((option) => (
+                <label
+                  key={option}
+                  className={`flex-1 text-center p-4 rounded-xl border-2 cursor-pointer transition ${
+                    formData.gender === option
+                      ? "border-cyan-500 bg-cyan-500 "
+                      : "border-gray-300 bg-white hover:border-gray-400"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="gender"
+                    value={option}
+                    checked={formData.gender === option}
+                    onChange={(e) =>
+                      handleInputChange("gender", e.target.value)
+                    }
+                    className="hidden"
+                  />
+                  <span
+                    className={`capitalize ${
+                      formData.gender === option
+                        ? "text-white"
+                        : "text-gray-900"
+                    }`}
+                  >
+                    {option}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Physical Activity Selection */}
+          <div className="mb-6">
+            <label className="block text-gray-600 text-base mb-3">
+              Physical Activity Level
+            </label>
+            <select
+              value={formData.physicalActivity}
+              onChange={(e) =>
+                handleInputChange("physicalActivity", e.target.value)
+              }
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600 text-gray-900"
+            >
+              <option value="">Select activity level</option>
+              <option value="sedentary">
+                Sedentary (little or no exercise)
+              </option>
+              <option value="light">Light (1–3 days/week)</option>
+              <option value="moderate">Moderate (3–5 days/week)</option>
+              <option value="active">Active (6–7 days/week)</option>
+              <option value="very-active">
+                Very Active (hard exercise daily)
+              </option>
+            </select>
+          </div>
 
           {/* Height Input */}
           <div className="mb-6">
@@ -74,7 +148,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.height}
                 onChange={(e) => handleInputChange("height", e.target.value)}
-                className="flex-1 max-w-[calc(100%-80px)] px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
               <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-4 rounded-xl font-semibold text-lg">
                 cm
@@ -92,7 +166,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.weight}
                 onChange={(e) => handleInputChange("weight", e.target.value)}
-                className="flex-1 max-w-[calc(100%-80px)] px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
               <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-4 rounded-xl font-semibold text-lg">
                 kg
@@ -112,7 +186,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 onChange={(e) =>
                   handleInputChange("goalWeight", e.target.value)
                 }
-                className="flex-1 max-w-[calc(100%-80px)] px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
               <div className="w-20 text-center bg-gray-100 text-gray-500 py-4 rounded-xl font-semibold text-lg">
                 kg
@@ -121,8 +195,8 @@ export default function PhysicalInfo({ onNext, onBack }) {
           </div>
         </div>
 
-        {/* ✅ Fixed Bottom Navigation like Goals & HealthHabits */}
-        <div className="px-4 py-6 pb-16 ">
+        {/* Bottom Navigation */}
+        <div className="px-4 py-6 pb-16">
           <BottomNavigation
             onBack={onBack}
             onNext={handleNext}
