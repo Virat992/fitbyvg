@@ -1,3 +1,4 @@
+// src/routes/OnboardingRoute.jsx
 import { auth, db } from "../services/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Navigate } from "react-router-dom";
@@ -11,19 +12,17 @@ export default function OnboardingRoute({ children }) {
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (user && user.email) {
+      if (user?.email) {
         try {
           const userDoc = await getDoc(doc(db, "users", user.email));
           if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setOnboardingStatus(userData.onboardingCompleted || false);
+            const data = userDoc.data();
+            setOnboardingStatus(data.onboardingCompleted ?? false);
           } else {
-            // User document doesn't exist, onboarding is needed
             setOnboardingStatus(false);
           }
-        } catch (error) {
-          console.error("Error checking onboarding status:", error);
-          // On error, allow onboarding
+        } catch (err) {
+          console.error("Error checking onboarding status:", err);
           setOnboardingStatus(false);
         }
       }
@@ -37,22 +36,17 @@ export default function OnboardingRoute({ children }) {
     }
   }, [user]);
 
-  if (loading || checkingOnboarding) {
+  if (loading || checkingOnboarding || onboardingStatus === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-center text-gray-600">Loading...</p>
+        <p className="text-gray-600 text-center">Loading...</p>
       </div>
     );
   }
 
-  if (!user) {
-    return <Navigate to="/" />;
-  }
+  if (!user) return <Navigate to="/" />;
 
-  // If user has already completed onboarding, redirect to dashboard
-  if (onboardingStatus === true) {
-    return <Navigate to="/dashboard" />;
-  }
+  if (onboardingStatus === true) return <Navigate to="/dashboard" />;
 
   return children;
 }

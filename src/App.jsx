@@ -1,3 +1,4 @@
+// src/App.jsx
 import "./styles/index.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from "./pages/Signup.jsx";
@@ -16,10 +17,10 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        
-        {/* Onboarding route - requires authentication and redirects if already completed */}
+
+        {/* Onboarding route */}
         <Route
-          path="/onboarding"
+          path="/onboarding/*"
           element={
             <OnboardingRoute>
               <Onboarding />
@@ -27,7 +28,7 @@ function App() {
           }
         />
 
-        {/* Protected route */}
+        {/* Dashboard route */}
         <Route
           path="/dashboard"
           element={

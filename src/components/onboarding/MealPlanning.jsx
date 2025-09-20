@@ -35,7 +35,7 @@ export default function MealPlanning({ onNext, onBack }) {
     <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
       <div className="px-4 pt-6 mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 ">
           Meal Planning Habits
         </h1>
         <button

@@ -57,7 +57,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
       <div className="w-full max-w-md mx-auto flex flex-col h-full">
         {/* Header */}
         <div className="px-4 pt-6 pb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900">
             Your Physical Stats
           </h1>
           <button
@@ -83,9 +83,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
               {["male", "female", "other"].map((option) => (
                 <label
                   key={option}
-                  className={`flex-1 text-center p-4 rounded-xl border-2 cursor-pointer transition ${
+                  className={`flex-1 text-center p-3 rounded-xl border-2 cursor-pointer transition ${
                     formData.gender === option
-                      ? "border-cyan-500 bg-cyan-500 "
+                      ? "border-cyan-500 bg-cyan-500"
                       : "border-gray-300 bg-white hover:border-gray-400"
                   }`}
                 >
@@ -123,7 +123,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
               onChange={(e) =>
                 handleInputChange("physicalActivity", e.target.value)
               }
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600 text-gray-900"
+              className="w-full px-2 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600 text-gray-900"
             >
               <option value="">Select activity level</option>
               <option value="sedentary">
@@ -139,7 +139,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
           </div>
 
           {/* Height Input */}
-          <div className="mb-6">
+          <div className="mb-6 px-0">
             <label className="block text-gray-600 text-base mb-3">
               How tall are you?
             </label>
@@ -148,9 +148,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.height}
                 onChange={(e) => handleInputChange("height", e.target.value)}
-                className="flex-1 px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-4 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 rounded-xl font-semibold text-lg">
                 cm
               </div>
             </div>
@@ -166,9 +166,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.weight}
                 onChange={(e) => handleInputChange("weight", e.target.value)}
-                className="flex-1 px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-4 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 rounded-xl font-semibold text-lg">
                 kg
               </div>
             </div>
@@ -186,9 +186,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 onChange={(e) =>
                   handleInputChange("goalWeight", e.target.value)
                 }
-                className="flex-1 px-4 py-4 text-lg border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-gray-100 text-gray-500 py-4 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-gray-100 text-gray-500 py-3 rounded-xl font-semibold text-lg">
                 kg
               </div>
             </div>

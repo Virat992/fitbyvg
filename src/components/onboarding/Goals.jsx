@@ -89,7 +89,7 @@ export default function Goals({ firstName, onNext, onBack }) {
     <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
       <div className="px-4 pt-6 mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Goals</h1>
+        <h1 className="text-2xl font-bold text-gray-900 ">Goals</h1>
         <button
           onClick={handleLogout}
           className="text-sm font-semibold text-cyan-600 cursor-pointer hover:font-bold"

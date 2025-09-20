@@ -1,3 +1,4 @@
+// src/pages/Signup.jsx
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -67,20 +68,23 @@ export default function Signup() {
     try {
       setLoading(true);
 
+      // 1️⃣ Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
 
-      // Initialize user in Firestore with onboarding info
+      // 2️⃣ Initialize Firestore user doc
       await setDoc(doc(db, "users", email), {
         createdAt: new Date(),
-        onboarding: {}, // empty onboarding object
-        onboardingStep: 0, // start from first step
-        onboardingCompleted: false,
+        onboardingCompleted: false, // always false initially
+        onboardingStep: 0,
+        forms: {}, // empty forms
+        formsCompleted: false,
       });
 
+      // 3️⃣ Navigate to onboarding, not dashboard
       navigate("/onboarding");
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
