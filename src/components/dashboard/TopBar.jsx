@@ -34,7 +34,9 @@ export default function TopBar({ onCalendar, onNotifications }) {
 
   return (
     <div className="bg-cyan-600 text-white flex items-center justify-between px-5 py-4 shadow-lg relative">
-      <span className="font-bold text-xl tracking-wide">FitByVG</span>
+      <span className="font-bold text-xl tracking-wide">
+        FITBYVG<span className="align-super text-[15px]">™</span>
+      </span>
       <div className="flex items-center gap-5 relative" ref={menuRef}>
         <Calendar
           onClick={onCalendar}

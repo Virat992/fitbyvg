@@ -1,14 +1,10 @@
-// src/components/TodaysWorkout.jsx
 import { useState } from "react";
 
 export default function TodaysWorkout({ workout }) {
   const [showDetail, setShowDetail] = useState(false);
 
-  const exercises = [
-    { name: "Bench Press", reps: "10-12", sets: "4" },
-    { name: "Incline Dumbbell Press", reps: "12", sets: "3" },
-    { name: "Push-Ups", reps: "15-20", sets: "3" },
-  ];
+  // ✅ Use exercises from Firestore
+  const exercises = workout?.exercises || [];
 
   return (
     <>
@@ -27,15 +23,19 @@ export default function TodaysWorkout({ workout }) {
         onClick={() => setShowDetail(true)}
         className="relative bg-white rounded-2xl shadow-lg w-full max-w-md mx-auto overflow-hidden group cursor-pointer"
       >
-        <img
-          src={workout.img}
-          alt={workout.name}
-          className="h-64 w-full object-cover transform group-hover:scale-105 transition duration-500"
-        />
+        {workout?.img && (
+          <img
+            src={workout.img}
+            alt={workout.title || workout.name}
+            className="h-64 w-full object-cover transform group-hover:scale-105 transition duration-500"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
         <div className="absolute bottom-0 left-0 p-5 text-white">
-          <p className="font-semibold text-xl">{workout.name}</p>
-          <p className="text-sm mt-1 opacity-90">{workout.text}</p>
+          <p className="font-semibold text-xl">
+            {workout.title || workout.name}
+          </p>
+          <p className="text-sm mt-1 opacity-90">{workout.description}</p>
         </div>
       </div>
 
@@ -43,19 +43,19 @@ export default function TodaysWorkout({ workout }) {
       {showDetail && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-lg max-w-lg w-full overflow-hidden">
-            <img
-              src={workout.img}
-              alt={workout.name}
-              className="h-60 w-full object-cover"
-            />
+            {workout?.img && (
+              <img
+                src={workout.img}
+                alt={workout.title || workout.name}
+                className="h-60 w-full object-cover"
+              />
+            )}
             <div className="p-5">
               <h2 className="text-xl font-bold mb-2 text-gray-800">
-                {workout.name} Workout
+                {workout.title || workout.name} Workout
               </h2>
               <p className="text-gray-600 mb-4">
-                Today we are hitting the{" "}
-                <span className="font-semibold">Chest</span>. It improves
-                strength, posture, and power.
+                Today’s workout is designed to help you reach your fitness goal.
               </p>
               <ul className="space-y-2">
                 {exercises.map((ex, i) => (

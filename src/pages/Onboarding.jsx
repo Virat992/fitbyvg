@@ -1,3 +1,4 @@
+// src/pages/Onboarding.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { setDoc, doc } from "firebase/firestore";
@@ -18,6 +19,9 @@ import PARQForm from "../components/forms/PARQForm";
 import ACSMForm from "../components/forms/ACSMForm";
 import ConsentForm from "../components/forms/ConsentForm";
 import PreferencesForm from "../components/forms/PreferencesForm";
+
+// Workout helper
+import { fetchWorkoutByGoalAndExperience } from "../services/workouts";
 
 // Steps enum
 const STEPS = {
@@ -68,10 +72,25 @@ export default function Onboarding() {
     else navigate("/");
   };
 
+  // ✅ Updated: Complete onboarding and assign workout templates
   const handleComplete = async (data) => {
     if (!user) return;
 
     try {
+      // 1️⃣ Get first goal and experience
+      const firstGoal = data.goals[0]?.id; // e.g., "lose-fat"
+      const experience = data.preferences.exerciseExperience || "beginner";
+
+      // 2️⃣ Fetch workouts from workoutTemplates collection
+      const workouts = await fetchWorkoutByGoalAndExperience(
+        firstGoal,
+        experience
+      );
+
+      // 3️⃣ Assign workouts to user
+      const assignedWorkouts = workouts.length > 0 ? workouts : [];
+
+      // 4️⃣ Save onboarding + assigned workouts to Firestore
       await setDoc(
         doc(db, "users", user.email),
         {
@@ -79,6 +98,7 @@ export default function Onboarding() {
           onboardingCompleted: true,
           onboardingCompletedAt: new Date(),
           formsCompleted: true,
+          assignedWorkouts,
         },
         { merge: true }
       );

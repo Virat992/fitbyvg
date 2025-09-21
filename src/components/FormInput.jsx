@@ -23,7 +23,7 @@ export default function FormInput({
         onChange={onChange}
         onFocus={onFocus}
         placeholder={placeholder}
-        className={`border p-3 w-full rounded-xl focus:ring-2 focus:outline-none placeholder:text-sm ${
+        className={`border p-3 w-full rounded-2xl focus:ring-2 focus:outline-none placeholder:text-sm ${
           error
             ? "border-red-500 focus:ring-red-500"
             : "border-gray-300 focus:ring-cyan-600"

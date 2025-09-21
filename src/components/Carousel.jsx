@@ -20,7 +20,7 @@ export default function Carousel({ cards }) {
   };
 
   return (
-    <div className="w-full h-[370px] sm:h-[360px] my-2 px-3">
+    <div className="w-[95%] h-[370px] sm:h-[360px] my-2 px-3">
       <div
         ref={cardsRef}
         className="flex overflow-x-auto gap-4 snap-x snap-mandatory px-1 scrollbar-hide scroll-smooth max-w-[600px] mx-auto"

@@ -8,6 +8,7 @@ import Onboarding from "./pages/Onboarding.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 import OnboardingRoute from "./routes/OnboardingRoute.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/workout" element={<WorkoutTemplates />} />
 
         {/* Onboarding route */}
         <Route

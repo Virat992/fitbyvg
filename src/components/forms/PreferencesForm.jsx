@@ -6,6 +6,7 @@ export default function PreferencesForm({ onNext, onBack }) {
     workoutTime: "",
     trainingType: "",
     communication: "",
+    exerciseExperience: "", // ✅ Added new field
   });
 
   const handleChange = (key, value) => {
@@ -19,7 +20,8 @@ export default function PreferencesForm({ onNext, onBack }) {
   const isValid =
     preferences.workoutTime &&
     preferences.trainingType &&
-    preferences.communication;
+    preferences.communication &&
+    preferences.exerciseExperience; // ✅ include new field in validation
 
   return (
     <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
@@ -81,6 +83,24 @@ export default function PreferencesForm({ onNext, onBack }) {
             <option value="in-app">In-App Notifications</option>
           </select>
         </div>
+
+        {/* Prior Exercise Experience */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-2">
+            Prior Exercise Experience
+          </label>
+          <select
+            value={preferences.exerciseExperience}
+            onChange={(e) => handleChange("exerciseExperience", e.target.value)}
+            className="w-full border rounded-lg px-3 py-2"
+          >
+            <option value="">Select experience level</option>
+            <option value="none">None</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
       </div>
 
       {/* Bottom Navigation */}
@@ -89,7 +109,7 @@ export default function PreferencesForm({ onNext, onBack }) {
           onBack={onBack}
           onNext={handleNext}
           nextDisabled={!isValid}
-          nextLabel="Finish" // ✅ Changed button label
+          nextLabel="Finish"
         />
       </div>
     </div>
