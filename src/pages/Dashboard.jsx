@@ -123,7 +123,7 @@ export default function Dashboard() {
 
       <div
         className={`flex-1 overflow-y-auto px-5 ${
-          selectedWorkout ? "pb-36" : "pb-40"
+          selectedWorkout ? "pb-40 pt-3" : "pb-40"
         }`}
       >
         {/* Show Carousels if no workout is selected */}

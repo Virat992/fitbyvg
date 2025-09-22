@@ -9,6 +9,7 @@ import PrivateRoute from "./routes/PrivateRoute.jsx";
 import OnboardingRoute from "./routes/OnboardingRoute.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
+import AddWorkout from "./admin/AddWorkout.jsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/workout" element={<WorkoutTemplates />} />
+        <Route path="/addworkout" element={<AddWorkout />} />
 
         {/* Onboarding route */}
         <Route
