@@ -27,11 +27,13 @@ export default function Dashboard() {
   const [completedExercises, setCompletedExercises] = useState({});
   const [noteInput, setNoteInput] = useState("");
   const [notesHistory, setNotesHistory] = useState([]);
+  const [completedDays, setCompletedDays] = useState({});
 
   const [calendarView, setCalendarView] = useState(false);
   const [calendarDates, setCalendarDates] = useState([]);
   const [calendarExercises, setCalendarExercises] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   const auth = getAuth();
   const userId = auth.currentUser.uid;
@@ -92,7 +94,19 @@ export default function Dashboard() {
     const sortedDays = snap.docs
       .map((d) => d.id.toLowerCase())
       .sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+
+    // Fetch user progress for all days
+    const progressCol = collection(db, "users", userId, "progress");
+    const progressSnap = await getDocs(progressCol);
+    const progressData = {};
+    progressSnap.docs.forEach((d) => {
+      if (d.data().completed) {
+        progressData[d.id] = true;
+      }
+    });
+
     setDays(sortedDays);
+    setCompletedDays(progressData);
   };
 
   // --- Fetch Exercises ---
@@ -144,9 +158,22 @@ export default function Dashboard() {
     );
     await setDoc(
       progressRef,
-      { exercises: completedExercises, notes: notesHistory, date: today },
+      {
+        exercises: completedExercises,
+        notes: notesHistory,
+        date: today,
+        completed: allCompleted, // mark completed if all exercises done
+      },
       { merge: true }
     );
+
+    if (allCompleted) {
+      setCompletedDays((prev) => ({
+        ...prev,
+        [`${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`]: true,
+      }));
+    }
+
     alert("Progress saved ✅");
     fetchCalendarDates(); // refresh calendar
   };
@@ -154,18 +181,34 @@ export default function Dashboard() {
   // --- Save Note ---
   const saveNote = async () => {
     if (!noteInput.trim()) return;
-    const progressRef = doc(
-      db,
-      "users",
-      userId,
-      "progress",
-      `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-    );
-    const newNote = { note: noteInput, timestamp: new Date().toISOString() };
-    await updateDoc(progressRef, { notes: arrayUnion(newNote) });
-    setNotesHistory((prev) => [...prev, newNote]);
-    setNoteInput("");
-    fetchCalendarDates(); // refresh calendar
+    setSavingNote(true);
+    try {
+      const progressRef = doc(
+        db,
+        "users",
+        userId,
+        "progress",
+        `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+      );
+
+      const newNote = { note: noteInput, timestamp: new Date().toISOString() };
+
+      await setDoc(
+        progressRef,
+        { exercises: completedExercises, notes: [newNote], completed: false },
+        { merge: true }
+      );
+
+      await updateDoc(progressRef, { notes: arrayUnion(newNote) });
+
+      setNotesHistory((prev) => [...prev, newNote]);
+      setNoteInput("");
+      fetchCalendarDates();
+    } catch (err) {
+      console.error("Error saving note:", err);
+    } finally {
+      setSavingNote(false);
+    }
   };
 
   // --- Calendar fetch ---
@@ -199,11 +242,16 @@ export default function Dashboard() {
   }, []);
 
   const handleToggleExercise = (id) => {
+    const lockKey = `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`;
+    if (completedDays[lockKey]) return; // prevent toggling if already completed
     setCompletedExercises((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const allCompleted = Object.values(completedExercises).every((v) => v);
   const handleToggleAll = () => {
+    const lockKey = `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`;
+    if (completedDays[lockKey]) return; // prevent toggling if already completed
+
     const newState = {};
     exercises.forEach((ex) => (newState[ex.id] = !allCompleted));
     setCompletedExercises(newState);
@@ -299,7 +347,8 @@ export default function Dashboard() {
               className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
               onClick={() => setSelectedWorkout(null)}
             >
-              <FaArrowLeft className="text-sm" /> <span>Back</span>
+              <FaArrowLeft className="text-sm cursor-pointer" />{" "}
+              <span className="cursor-pointer">Back</span>
             </button>
             <img
               src={selectedWorkout.img}
@@ -366,19 +415,27 @@ export default function Dashboard() {
             </button>
             <h2 className="text-xl font-bold mb-3">Select a Day</h2>
             <div className="grid grid-cols-2 gap-3">
-              {days.map((day) => (
-                <button
-                  key={day}
-                  onClick={() =>
-                    fetchExercises(selectedWorkout, selectedWeek, day).then(
-                      () => setSelectedDay(day)
-                    )
-                  }
-                  className="p-4 bg-gray-100 rounded-xl text-center font-semibold hover:bg-cyan-100"
-                >
-                  {day}
-                </button>
-              ))}
+              {days.map((day) => {
+                const dayKey = `${selectedWorkout.dbName}_${selectedWeek}_${day}`;
+                const isCompleted = completedDays[dayKey];
+                return (
+                  <button
+                    key={day}
+                    onClick={() =>
+                      fetchExercises(selectedWorkout, selectedWeek, day).then(
+                        () => setSelectedDay(day)
+                      )
+                    }
+                    className={`p-4 rounded-xl text-center font-semibold ${
+                      isCompleted
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-100 hover:bg-cyan-100"
+                    }`}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -387,10 +444,10 @@ export default function Dashboard() {
         {!calendarView && selectedDay && (
           <div className="bg-white rounded-2xl shadow-lg p-5">
             <button
-              className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
+              className="flex cursor-pointer items-center gap-2 text-cyan-600 font-medium mb-4"
               onClick={() => setSelectedDay(null)}
             >
-              <FaArrowLeft className="text-sm" /> Back
+              <FaArrowLeft className="text-sm cursor-pointer" /> Back
             </button>
             <h2 className="text-xl font-bold mb-4 capitalize">
               {selectedWorkout.name} - {selectedWeek} - {selectedDay}
@@ -414,15 +471,21 @@ export default function Dashboard() {
                     <p className="text-sm text-gray-600">
                       {ex.sets} sets × {ex.reps}
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {ex.instructions || "No instructions provided."}
-                    </p>
                     <label className="flex items-center mt-2">
                       <input
                         type="checkbox"
                         checked={completedExercises[ex.id] || false}
-                        onChange={() => handleToggleExercise(ex.id)}
+                        onChange={() =>
+                          !completedDays[
+                            `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+                          ] && handleToggleExercise(ex.id)
+                        }
                         className="mr-2"
+                        disabled={
+                          completedDays[
+                            `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+                          ]
+                        } // lock if completed
                       />
                       Mark Done
                     </label>
@@ -441,9 +504,14 @@ export default function Dashboard() {
               />
               <button
                 onClick={saveNote}
-                className="mt-2 py-2 px-4 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700"
+                disabled={savingNote}
+                className={`mt-2 py-2 cursor-pointer px-4 rounded-lg transition ${
+                  savingNote
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-cyan-600 text-white hover:bg-cyan-700"
+                }`}
               >
-                Save Note
+                {savingNote ? "Saving..." : "Save Note"}
               </button>
             </div>
 
@@ -473,13 +541,29 @@ export default function Dashboard() {
                 type="checkbox"
                 checked={allCompleted}
                 onChange={handleToggleAll}
+                disabled={
+                  completedDays[
+                    `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+                  ]
+                } // lock if completed
               />
               <span className="font-semibold">Workout Completed</span>
             </div>
 
             <button
               onClick={saveProgress}
-              className="w-full py-3 bg-cyan-600 text-white font-bold rounded-2xl hover:bg-cyan-700 transition"
+              disabled={
+                completedDays[
+                  `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+                ]
+              }
+              className={`w-full py-3 font-bold rounded-2xl transition ${
+                completedDays[
+                  `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+                ]
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-cyan-600 text-white hover:bg-cyan-700"
+              }`}
             >
               Save Progress
             </button>
