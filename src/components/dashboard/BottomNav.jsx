@@ -12,17 +12,17 @@ export default function BottomNav({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-3 shadow-xl rounded-t-2xl">
+    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 sm:py-3 shadow-xl rounded-t-2xl z-50">
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
           onClick={() => setActiveTab(id)}
-          className={`flex flex-col items-center text-sm ${
-            activeTab === id ? "text-cyan-600 font-bold" : "text-gray-500"
+          className={`flex flex-col items-center text-[10px] sm:text-sm ${
+            activeTab === id ? "text-cyan-600 font-semibold" : "text-gray-500"
           }`}
         >
-          <Icon className="w-6 h-6 mb-1" />
-          {label}
+          <Icon className="w-5 h-5 sm:w-6 sm:h-6 mb-0.5" />
+          <span className="mt-0.5">{label}</span>
         </button>
       ))}
     </div>
