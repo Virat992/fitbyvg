@@ -37,19 +37,19 @@ export default function TopBar({ onCalendar, onNotifications }) {
       <span className="font-bold text-xl tracking-wide">
         FITBYVG<span className="align-super text-[15px]">™</span>
       </span>
-      <div className="flex items-center gap-5 relative" ref={menuRef}>
+      <div className="flex items-center gap-6 relative" ref={menuRef}>
         <Calendar
           onClick={onCalendar}
-          className="w-6 h-6 cursor-pointer hover:text-gray-200 transition"
+          className="w-5 h-5 cursor-pointer hover:text-gray-200 transition"
         />
         <Bell
           onClick={onNotifications}
-          className="w-6 h-6 cursor-pointer hover:text-gray-200 transition"
+          className="w-5 h-5 cursor-pointer hover:text-gray-200 transition"
         />
         <div className="relative">
           <User
             onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-7 h-7 cursor-pointer hover:text-gray-200 transition"
+            className="w-5 h-5 cursor-pointer hover:text-gray-200 transition"
           />
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded-lg shadow-lg z-50">

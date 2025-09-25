@@ -7,6 +7,7 @@ export default function FormInput({
   placeholder,
   error,
   onFocus,
+  rightIcon, // added for eye icon
 }) {
   return (
     <div className="relative w-full">
@@ -16,6 +17,8 @@ export default function FormInput({
       >
         {label}
       </label>
+
+      {/* Input field with extra padding on right for the icon */}
       <input
         type={type}
         id={id}
@@ -27,8 +30,16 @@ export default function FormInput({
           error
             ? "border-red-500 focus:ring-red-500"
             : "border-gray-300 focus:ring-cyan-600"
-        }`}
+        } pr-10`} // extra padding on right
       />
+
+      {/* Right icon */}
+      {rightIcon && (
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          {rightIcon}
+        </div>
+      )}
+
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );

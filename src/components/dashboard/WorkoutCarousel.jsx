@@ -5,7 +5,7 @@ export default function WorkoutCarousel({
   cardHighlight,
 }) {
   return (
-    <div className="mb-0 pt-5 pb-2">
+    <div className="mb-0 pt-5 pb-1">
       <h3 className="text-lg font-bold text-gray-800 mb-2">{title}</h3>
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
         {programs.map((program, index) => {

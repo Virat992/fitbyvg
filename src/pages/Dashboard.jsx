@@ -352,6 +352,7 @@ export default function Dashboard() {
 
         if (snap.exists()) {
           const data = snap.data();
+
           if (data.currentProgram) {
             const allPrograms = [...bodybuilding, ...fatloss, ...rehab];
             const program = allPrograms.find(
@@ -359,33 +360,15 @@ export default function Dashboard() {
             );
 
             if (program) {
-              setCurrentProgram(program); // show on top
+              setCurrentProgram(program); // show current workout
+              await fetchWeeks(program);
 
-              // Fetch weeks and user progress for this program
-              const weeksCol = collection(
-                db,
-                "workoutTemplates",
-                program.dbName,
-                "weeks"
-              );
-              const snapWeeks = await getDocs(weeksCol);
-              const sortedWeeks = snapWeeks.docs
-                .map((d) => d.id)
-                .sort((a, b) => {
-                  const numA = parseInt(a.replace(/\D/g, ""), 10);
-                  const numB = parseInt(b.replace(/\D/g, ""), 10);
-                  return numA - numB;
-                });
-              setWeeks(sortedWeeks);
-
-              // Fetch all progress for this user for this program
+              // fetch user progress
               const progressCol = collection(db, "users", userId, "progress");
               const progressSnap = await getDocs(progressCol);
               const progressData = {};
               progressSnap.docs.forEach((d) => {
-                if (d.data().completed) {
-                  progressData[d.id] = true;
-                }
+                if (d.data().completed) progressData[d.id] = true;
               });
               setCompletedDays(progressData);
             }
@@ -397,7 +380,20 @@ export default function Dashboard() {
     };
 
     fetchCurrentProgram();
-    fetchCalendarDates(); // refresh calendar
+    fetchCalendarDates();
+
+    // --- Prevent browser back from logging out ---
+    const handlePopState = () => {
+      if (auth.currentUser) {
+        window.location.replace("/dashboard"); // stay on dashboard
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
 
   const handleToggleExercise = (id) => {
@@ -456,8 +452,19 @@ export default function Dashboard() {
       <div className="flex-1 overflow-y-auto px-5 pb-40">
         {/* --- Calendar View --- */}
         {calendarView && (
-          <div className="bg-white rounded-2xl shadow-lg p-5 mb-5">
-            <h2 className="text-xl font-bold mb-3">Workout Calendar</h2>
+          <div className="bg-white rounded-2xl mt-5 shadow-lg p-5 mb-0">
+            {/* Header with Back Button */}
+            <div className="flex items-center gap-3 mb-0">
+              <button
+                onClick={() => setCalendarView(false)} // 👈 back to previous view
+                className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
+              >
+                Back
+              </button>
+            </div>
+            <h2 className="text-xl flex justify-center font-bold mb-3">
+              Workout Calendar
+            </h2>
             <div className="grid grid-cols-7 gap-2 mb-4">
               {Array.from({ length: 30 }).map((_, i) => {
                 const date = new Date();
@@ -480,8 +487,8 @@ export default function Dashboard() {
 
             {selectedDate && (
               <div>
-                <h3 className="font-semibold mb-2">
-                  Exercises on {selectedDate}
+                <h3 className="font-semibold mt-5 text-cyan-600 mb-0">
+                  Exercises done on {selectedDate}
                 </h3>
                 {calendarExercises.length === 0 ? (
                   <p className="text-gray-500">No workout done on this date.</p>
@@ -516,7 +523,7 @@ export default function Dashboard() {
 
         {currentProgram && !selectedWorkout && (
           <WorkoutCarousel
-            title="🔥 Current Workout"
+            title="🔥 Ongoing Workout"
             programs={[currentProgram]}
             cardHighlight={true} // enable highlight
             onClickCard={(program) => {
@@ -566,13 +573,12 @@ export default function Dashboard() {
 
         {/* Workout info before start */}
         {!calendarView && selectedWorkout && !started && (
-          <div className="bg-white rounded-2xl shadow-lg p-5">
+          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
             {/* Back button */}
             <button
               className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
               onClick={() => setSelectedWorkout(null)}
             >
-              <FaArrowLeft className="text-sm" />
               <span>Back</span>
             </button>
 
@@ -638,10 +644,11 @@ export default function Dashboard() {
               }}
               className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
             >
-              <FaArrowLeft className="text-sm" />
               <span>Back</span>
             </button>
-            <h2 className="text-xl font-bold mb-3">Select a Week</h2>
+            <h2 className="text-xl flex justify-center font-bold mb-5">
+              Select a Week
+            </h2>
             <div className="grid  grid-cols-2 gap-3">
               {weeks.map((week) => {
                 const displayWeek = week.replace(/([a-zA-Z]+)(\d+)/, "$1 $2");
@@ -670,14 +677,16 @@ export default function Dashboard() {
         )}
         {/* Days */}
         {!calendarView && selectedWeek && !selectedDay && (
-          <div className="bg-white rounded-2xl shadow-lg p-5">
+          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
             <button
               className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
               onClick={() => setSelectedWeek(null)}
             >
-              <FaArrowLeft className="text-sm" /> Back
+              Back
             </button>
-            <h2 className="text-xl font-bold mb-3">Select a Day</h2>
+            <h2 className="text-xl flex justify-center font-bold mb-5">
+              Select a Day
+            </h2>
             <div className="grid grid-cols-2 gap-3">
               {days.map((day) => {
                 const dayKey = `${selectedWorkout.dbName}_${selectedWeek}_${day}`;
@@ -705,12 +714,12 @@ export default function Dashboard() {
         )}
         {/* Exercises + Notes */}
         {!calendarView && selectedDay && (
-          <div className="bg-white rounded-2xl shadow-lg p-5">
+          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
             <button
               className="flex cursor-pointer items-center gap-2 text-cyan-600 font-medium mb-4"
               onClick={() => setSelectedDay(null)}
             >
-              <FaArrowLeft className="text-sm cursor-pointer" /> Back
+              Back
             </button>
             <h2 className="text-xl font-bold mb-4 capitalize">
               {selectedWorkout.name} - {selectedWeek} - {selectedDay}
@@ -757,45 +766,44 @@ export default function Dashboard() {
               ))}
             </div>
 
+            {/* Notes Section */}
             <div className="mb-4">
-              <textarea
-                value={noteInput}
-                onChange={(e) => setNoteInput(e.target.value)}
-                placeholder="Write a note about today's workout..."
-                className="w-full border rounded-lg p-3 text-sm"
-                rows={3}
-              />
-              <button
-                onClick={saveNote}
-                disabled={savingNote}
-                className={`mt-2 py-2 cursor-pointer px-4 rounded-lg transition ${
-                  savingNote
-                    ? "bg-gray-400 text-white cursor-not-allowed"
-                    : "bg-cyan-600 text-white hover:bg-cyan-700"
-                }`}
-              >
-                {savingNote ? "Saving..." : "Save Note"}
-              </button>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="font-semibold text-lg mb-2">Notes History</h3>
-              {notesHistory.length === 0 ? (
-                <p className="text-sm text-gray-500">No notes yet.</p>
+              {completedDays[
+                `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+              ] ? (
+                // ✅ Show saved notes only (read-only view)
+                noteInput ? (
+                  <div className="p-3 border rounded-lg bg-gray-100 text-sm text-gray-700">
+                    <strong>My Notes:</strong>
+                    <p className="mt-1 whitespace-pre-line">{noteInput}</p>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm italic">
+                    No notes were added for this workout.
+                  </p>
+                )
               ) : (
-                <ul className="space-y-2">
-                  {notesHistory.map((n, idx) => (
-                    <li
-                      key={idx}
-                      className="border rounded-lg p-3 bg-gray-50 text-sm"
-                    >
-                      <p className="text-gray-700">{n.note}</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(n.timestamp).toLocaleString()}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
+                // ✅ Show textarea + save button before workout completion
+                <>
+                  <textarea
+                    value={noteInput}
+                    onChange={(e) => setNoteInput(e.target.value)}
+                    placeholder="Write a note about today's workout..."
+                    className="w-full border rounded-lg p-3 text-sm"
+                    rows={3}
+                  />
+                  <button
+                    onClick={saveNote}
+                    disabled={savingNote}
+                    className={`mt-2 py-2 px-4 rounded-lg transition ${
+                      savingNote
+                        ? "bg-gray-400 text-white cursor-not-allowed"
+                        : "bg-cyan-600 text-white hover:bg-cyan-700"
+                    }`}
+                  >
+                    {savingNote ? "Saving..." : "Save Note"}
+                  </button>
+                </>
               )}
             </div>
 
@@ -813,6 +821,7 @@ export default function Dashboard() {
               <span className="font-semibold">Workout Completed</span>
             </div>
 
+            {/* Save Progress Button */}
             <button
               onClick={saveProgress}
               disabled={
@@ -824,11 +833,15 @@ export default function Dashboard() {
                 completedDays[
                   `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
                 ]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  ? "bg-green-500 text-white cursor-not-allowed"
                   : "bg-cyan-600 text-white hover:bg-cyan-700"
               }`}
             >
-              Save Progress
+              {completedDays[
+                `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+              ]
+                ? "Workout Completed ✅"
+                : "Save Progress"}
             </button>
           </div>
         )}
