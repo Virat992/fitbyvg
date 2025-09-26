@@ -1,19 +1,21 @@
+// src/pages/Dashboard.jsx
 import { useState, useEffect } from "react";
-import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { addDays, parseISO, format } from "date-fns";
+import { getAuth } from "firebase/auth";
+import { db } from "../services/firebase";
+import { collection, doc, getDocs, getDoc, setDoc } from "firebase/firestore";
+
+import Calendar from "../components/dashboard/Calender";
 import TopBar from "../components/dashboard/TopBar";
 import BottomNav from "../components/dashboard/BottomNav";
-import { getAuth } from "firebase/auth";
 import WorkoutCarousel from "../components/dashboard/WorkoutCarousel";
-import { db } from "../services/firebase";
-import {
-  collection,
-  doc,
-  getDocs,
-  setDoc,
-  getDoc,
-  updateDoc,
-  arrayUnion,
-} from "firebase/firestore";
+import WorkoutInfo from "../components/dashboard/WorkoutInfo";
+import WeekSelector from "../components/dashboard/WeekSelector";
+import DaySelector from "../components/dashboard/DaySelector";
+import ExercisesList from "../components/dashboard/ExerciseList";
+
+import { bodybuilding, fatloss, rehab } from "../data/programs";
+import DietDashboard from "../components/diet/DietDashboard";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("workout");
@@ -28,385 +30,210 @@ export default function Dashboard() {
   const [noteInput, setNoteInput] = useState("");
   const [notesHistory, setNotesHistory] = useState([]);
   const [completedDays, setCompletedDays] = useState({});
-
   const [calendarView, setCalendarView] = useState(false);
   const [calendarDates, setCalendarDates] = useState([]);
-  const [calendarExercises, setCalendarExercises] = useState([]);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [calendarDetails, setCalendarDetails] = useState(null);
   const [savingNote, setSavingNote] = useState(false);
   const [currentProgram, setCurrentProgram] = useState(null);
+  const [programStartDate, setProgramStartDate] = useState(null);
 
   const auth = getAuth();
-  const userId = auth.currentUser.uid;
+  const userId = auth.currentUser?.uid;
+  const allPrograms = [...bodybuilding, ...fatloss, ...rehab];
 
-  const bodybuilding = [
-    {
-      name: "Bodybuilding Beginner",
-      dbName: "Bodybuilding-beginner",
-      img: "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1169&auto=format&fit=crop",
-      description: "Intro strength training program for beginners.",
-      shortDesc: "Learn the basics of strength training & muscle building.",
-      phases: "3 Phases • 4 Weeks",
-      experience: "Beginner",
-      equipment: "Dumbbells, Mat",
-      coach: "Virat, ACSM Certified Coach",
-    },
-    {
-      name: "Bodybuilding Intermediate",
-      dbName: "Bodybuilding-intermediate",
-      img: "https://images.unsplash.com/photo-1692369608021-c722c4fc7088?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8d29ya291dCUyMGd5bXxlbnwwfHwwfHx8MA%3D%3Dhttps://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1169&auto=format&fit=crop",
-      description: "Intro strength training program for beginners.",
-      shortDesc: "Learn the basics of strength training & muscle building.",
-      phases: "3 Phases • 4 Weeks",
-      experience: "Beginner",
-      equipment: "Dumbbells, Mat",
-      coach: "Virat, ACSM Certified Coach",
-    },
-    {
-      name: "Bodybuilding Advance",
-      dbName: "Bodybuilding-advance",
-      img: "https://plus.unsplash.com/premium_photo-1674059549221-e2943b475f62?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8Zml0bmVzc3xlbnwwfHwwfHx8MA%3D%3Dhttps://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=1169&auto=format&fit=crop",
-      description: "Intro strength training program for beginners.",
-      shortDesc: "Learn the basics of strength training & muscle building.",
-      phases: "3 Phases • 4 Weeks",
-      experience: "Beginner",
-      equipment: "Dumbbells, Mat",
-      coach: "Virat, ACSM Certified Coach",
-    },
-  ];
-
-  const fatloss = [
-    {
-      name: "Fat Loss Beginner",
-      dbName: "Fatloss-beginner",
-      img: "https://images.unsplash.com/photo-1483721310020-03333e577078?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1594737626072-90f5c7a3c8be?q=80&w=1170&auto=format&fit=crop",
-      description: "Kickstart your fat loss journey with easy routines.",
-      shortDesc: "Calorie burning beginner friendly plan.",
-      phases: "1 Phase • 8 Weeks",
-      experience: "Beginner",
-      equipment: "Bodyweight, Light Dumbbells",
-      coach: "Virat, ACSM Certified Coach",
-    },
-    {
-      name: "Fat Loss Intermediate",
-      dbName: "Fatloss-intermediate",
-      img: "https://plus.unsplash.com/premium_photo-1664910806127-d52cb0e0d091?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1170&auto=format&fit=crop",
-      description: "Push your fat loss journey with moderate intensity.",
-      shortDesc: "Intermediate cardio & strength hybrid plan.",
-      phases: "2 Phases • 10 Weeks",
-      experience: "Intermediate",
-      equipment: "Dumbbells, Resistance Bands",
-      coach: "Virat, ACSM Certified Coach",
-    },
-    {
-      name: "Fat Loss Advanced",
-      dbName: "Fatloss-advanced",
-      img: "https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1616279963381-9759b6ac290e?q=80&w=1170&auto=format&fit=crop",
-      description: "High intensity fat loss training program.",
-      shortDesc: "Burn maximum fat with HIIT & strength mix.",
-      phases: "3 Phases • 12 Weeks",
-      experience: "Advanced",
-      equipment: "Full Gym Setup",
-      coach: "Virat, ACSM Certified Coach",
-    },
-  ];
-
-  const rehab = [
-    {
-      name: "Shoulder Rehab",
-      dbName: "Shoulder-rehab",
-      img: "https://images.unsplash.com/photo-1600677396360-9c4e8e46e7d4?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1599058917212-d750089bc07b?q=80&w=1170&auto=format&fit=crop",
-      description: "Rehabilitation program for shoulder recovery.",
-      shortDesc: "Gentle exercises to strengthen & recover shoulders.",
-      phases: "1 Phase • 6 Weeks",
-      experience: "All Levels",
-      equipment: "Resistance Bands",
-      coach: "Virat, Rehab Specialist",
-    },
-    {
-      name: "Knee Rehab",
-      dbName: "Knee-rehab",
-      img: "https://images.unsplash.com/photo-1649751361457-01d3a696c7e6?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1598970434795-0c54fe7c0648?q=80&w=1170&auto=format&fit=crop",
-      description: "Rehabilitation program for knee recovery.",
-      shortDesc: "Supportive movements for knees post-injury.",
-      phases: "1 Phase • 6 Weeks",
-      experience: "All Levels",
-      equipment: "Bodyweight, Bands",
-      coach: "Virat, Rehab Specialist",
-    },
-    {
-      name: "Lower Back Rehab",
-      dbName: "Lowerback-rehab",
-      img: "https://images.unsplash.com/photo-1701826510604-933d4f755d35?q=80&w=1097&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1584466977773-270f5b8ca1c3?q=80&w=1170&auto=format&fit=crop",
-      description: "Rehabilitation program for lower back pain.",
-      shortDesc: "Improve posture, strengthen core & lower back.",
-      phases: "1 Phase • 6 Weeks",
-      experience: "All Levels",
-      equipment: "Mat, Bands",
-      coach: "Virat, Rehab Specialist",
-    },
-  ];
-
-  // --- Fetch Weeks ---
-  const fetchWeeks = async (workout) => {
-    const weeksCol = collection(
-      db,
-      "workoutTemplates",
-      workout.dbName,
-      "weeks"
-    );
-    const snap = await getDocs(weeksCol);
-
-    const sortedWeeks = snap.docs
-      .map((d) => d.id)
-      .sort((a, b) => {
-        const numA = parseInt(a.replace(/\D/g, ""), 10);
-        const numB = parseInt(b.replace(/\D/g, ""), 10);
-        return numA - numB;
-      });
-    setWeeks(sortedWeeks);
-
-    // Fetch all progress for user
-    const progressCol = collection(db, "users", userId, "progress");
-    const progressSnap = await getDocs(progressCol);
-    const progressData = {};
-    progressSnap.docs.forEach((d) => {
-      if (d.data().completed) {
-        progressData[d.id] = true;
-      }
-    });
-    setCompletedDays(progressData);
-  };
-
-  // --- Fetch Days ---
-  const fetchDays = async (workout, weekId) => {
-    const daysCol = collection(
-      db,
-      "workoutTemplates",
-      workout.dbName,
-      "weeks",
-      weekId,
-      "days"
-    );
-    const snap = await getDocs(daysCol);
-    const dayOrder = [
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday",
-    ];
-    const sortedDays = snap.docs
-      .map((d) => d.id.toLowerCase())
-      .sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
-
-    // Fetch user progress for all days
-    const progressCol = collection(db, "users", userId, "progress");
-    const progressSnap = await getDocs(progressCol);
-    const progressData = {};
-    progressSnap.docs.forEach((d) => {
-      if (d.data().completed) {
-        progressData[d.id] = true;
-      }
-    });
-
-    setDays(sortedDays);
-    setCompletedDays(progressData);
-  };
-
-  // --- Fetch Exercises ---
-  const fetchExercises = async (workout, weekId, dayId) => {
-    const exercisesCol = collection(
-      db,
-      "workoutTemplates",
-      workout.dbName,
-      "weeks",
-      weekId,
-      "days",
-      dayId,
-      "exercises"
-    );
-    const snap = await getDocs(exercisesCol);
-    const exs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-    setExercises(exs);
-
-    const progressRef = doc(
-      db,
-      "users",
-      userId,
-      "progress",
-      `${workout.dbName}_${weekId}_${dayId}`
-    );
-    const progressSnap = await getDoc(progressRef);
-    if (progressSnap.exists()) {
-      const data = progressSnap.data();
-      setCompletedExercises(data.exercises || {});
-      setNotesHistory(data.notes || []);
-    } else {
-      const initialCompleted = {};
-      exs.forEach((ex) => (initialCompleted[ex.id] = false));
-      setCompletedExercises(initialCompleted);
-      setNotesHistory([]);
-    }
-  };
-
-  // --- Save Progress ---
-  const saveProgress = async () => {
-    if (!selectedWorkout || !selectedWeek || !selectedDay) return;
-    const today = new Date().toISOString().split("T")[0];
-    const progressRef = doc(
-      db,
-      "users",
-      userId,
-      "progress",
-      `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-    );
-    await setDoc(
-      progressRef,
-      {
-        exercises: completedExercises,
-        notes: notesHistory,
-        date: today,
-        completed: allCompleted, // mark completed if all exercises done
-      },
-      { merge: true }
-    );
-
-    if (allCompleted) {
-      setCompletedDays((prev) => ({
-        ...prev,
-        [`${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`]: true,
-      }));
-    }
-
-    alert("Progress saved ✅");
-    fetchCalendarDates(); // refresh calendar
-  };
-
-  // --- Save Note ---
-  const saveNote = async () => {
-    if (!noteInput.trim()) return;
-    setSavingNote(true);
+  // Helper: convert programStartDate + week + day => yyyy-MM-dd
+  const getDateFromWeekDay = (startDateStr, week, day) => {
     try {
+      const startDate = parseISO(startDateStr);
+      const dayOrder = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
+      const weekNumber = parseInt(week.replace(/\D/g, ""), 10) - 1 || 0;
+      const dayIndex = dayOrder.indexOf(day.toLowerCase());
+      return format(
+        addDays(startDate, weekNumber * 7 + (dayIndex >= 0 ? dayIndex : 0)),
+        "yyyy-MM-dd"
+      );
+    } catch {
+      return format(new Date(), "yyyy-MM-dd");
+    }
+  };
+
+  // ------------------- Fetch helpers -------------------
+  const fetchCalendarDates = async () => {
+    if (!userId) return;
+    try {
+      const snap = await getDocs(collection(db, "users", userId, "progress"));
+      const datesSet = new Set();
+      snap.docs.forEach((d) => {
+        if (d.data()?.date) datesSet.add(d.data().date);
+      });
+      setCalendarDates(Array.from(datesSet).sort());
+    } catch (err) {
+      console.error("fetchCalendarDates error:", err);
+    }
+  };
+
+  const fetchWeeks = async (workout) => {
+    if (!userId) return;
+    try {
+      const weeksCol = collection(
+        db,
+        "workoutTemplates",
+        workout.dbName,
+        "weeks"
+      );
+      const snap = await getDocs(weeksCol);
+      const sortedWeeks = snap.docs
+        .map((d) => d.id)
+        .sort(
+          (a, b) =>
+            parseInt(a.replace(/\D/g, "")) - parseInt(b.replace(/\D/g, ""))
+        );
+      setWeeks(sortedWeeks);
+
+      const progressSnap = await getDocs(
+        collection(db, "users", userId, "progress")
+      );
+      const progressData = {};
+      progressSnap.docs.forEach((d) => {
+        if (d.data()?.completed) progressData[d.id] = true;
+      });
+      setCompletedDays(progressData);
+    } catch (err) {
+      console.error("fetchWeeks error:", err);
+    }
+  };
+
+  const fetchDays = async (workout, weekId) => {
+    if (!userId) return;
+    try {
+      const daysCol = collection(
+        db,
+        "workoutTemplates",
+        workout.dbName,
+        "weeks",
+        weekId,
+        "days"
+      );
+      const snap = await getDocs(daysCol);
+      const dayOrder = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
+      const sortedDays = snap.docs
+        .map((d) => d.id.toLowerCase())
+        .sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b));
+
+      const progressSnap = await getDocs(
+        collection(db, "users", userId, "progress")
+      );
+      const progressData = {};
+      progressSnap.docs.forEach((d) => {
+        if (d.data()?.completed) progressData[d.id] = true;
+      });
+
+      setDays(sortedDays);
+      setCompletedDays(progressData);
+    } catch (err) {
+      console.error("fetchDays error:", err);
+    }
+  };
+
+  const fetchExercises = async (workout, weekId, dayId) => {
+    if (!userId) return;
+    try {
+      const exercisesCol = collection(
+        db,
+        "workoutTemplates",
+        workout.dbName,
+        "weeks",
+        weekId,
+        "days",
+        dayId,
+        "exercises"
+      );
+      const snap = await getDocs(exercisesCol);
+      const exs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setExercises(exs);
+
       const progressRef = doc(
         db,
         "users",
         userId,
         "progress",
-        `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+        `${workout.dbName}_${weekId}_${dayId}`
       );
+      const progressSnap = await getDoc(progressRef);
 
-      const newNote = { note: noteInput, timestamp: new Date().toISOString() };
-
-      await setDoc(
-        progressRef,
-        { exercises: completedExercises, notes: [newNote], completed: false },
-        { merge: true }
-      );
-
-      await updateDoc(progressRef, { notes: arrayUnion(newNote) });
-
-      setNotesHistory((prev) => [...prev, newNote]);
-      setNoteInput("");
-      fetchCalendarDates();
+      if (progressSnap.exists()) {
+        const data = progressSnap.data();
+        setCompletedExercises(data.exercises || {});
+        setNotesHistory(data.notes || []);
+      } else {
+        const initialCompleted = {};
+        exs.forEach((ex) => (initialCompleted[ex.id] = false));
+        setCompletedExercises(initialCompleted);
+        setNotesHistory([]);
+      }
     } catch (err) {
-      console.error("Error saving note:", err);
-    } finally {
-      setSavingNote(false);
+      console.error("fetchExercises error:", err);
     }
   };
 
-  // --- Calendar fetch ---
-  const fetchCalendarDates = async () => {
-    const progressCol = collection(db, "users", userId, "progress");
-    const snap = await getDocs(progressCol);
-    const dates = snap.docs.map((d) => d.data().date).filter(Boolean);
-    setCalendarDates(dates);
-  };
+  const allCompleted = Object.values(completedExercises).every((v) => v);
 
-  // --- Calendar click ---
-  const handleDateClick = async (date) => {
-    setSelectedDate(date);
-    const progressCol = collection(db, "users", userId, "progress");
-    const snap = await getDocs(progressCol);
-    let exercisesList = [];
-    let notesList = [];
-    snap.docs.forEach((d) => {
-      const data = d.data();
-      if (data.date === date) {
-        exercisesList.push({ workout: d.id, exercises: data.exercises || {} });
-        notesList.push(...(data.notes || []));
-      }
-    });
-    setCalendarExercises(exercisesList);
-    setNotesHistory(notesList);
-  };
-
+  // ------------------- Initial effect -------------------
   useEffect(() => {
     const fetchCurrentProgram = async () => {
+      if (!userId) return;
       try {
         const userRef = doc(db, "users", userId);
         const snap = await getDoc(userRef);
-
         if (snap.exists()) {
           const data = snap.data();
-
           if (data.currentProgram) {
-            const allPrograms = [...bodybuilding, ...fatloss, ...rehab];
             const program = allPrograms.find(
               (p) => p.dbName === data.currentProgram
             );
-
             if (program) {
-              setCurrentProgram(program); // show current workout
+              setCurrentProgram(program);
+              const start =
+                data.programStartDate ?? format(new Date(), "yyyy-MM-dd");
+              setProgramStartDate(start);
               await fetchWeeks(program);
-
-              // fetch user progress
-              const progressCol = collection(db, "users", userId, "progress");
-              const progressSnap = await getDocs(progressCol);
-              const progressData = {};
-              progressSnap.docs.forEach((d) => {
-                if (d.data().completed) progressData[d.id] = true;
-              });
-              setCompletedDays(progressData);
             }
           }
         }
       } catch (err) {
-        console.error("Error fetching current program:", err);
+        console.error("fetchCurrentProgram error:", err);
       }
     };
-
     fetchCurrentProgram();
     fetchCalendarDates();
+  }, [userId]);
 
-    // --- Prevent browser back from logging out ---
-    const handlePopState = () => {
-      if (auth.currentUser) {
-        window.location.replace("/dashboard"); // stay on dashboard
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
+  // ------------------- Handlers -------------------
   const handleToggleExercise = (id) => {
-    const lockKey = `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`;
-    if (completedDays[lockKey]) return; // prevent toggling if already completed
+    const lockKey = `${selectedWorkout?.dbName}_${selectedWeek}_${selectedDay}`;
+    if (completedDays[lockKey]) return;
     setCompletedExercises((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const allCompleted = Object.values(completedExercises).every((v) => v);
   const handleToggleAll = () => {
-    const lockKey = `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`;
-    if (completedDays[lockKey]) return; // prevent toggling if already completed
-
+    const lockKey = `${selectedWorkout?.dbName}_${selectedWeek}_${selectedDay}`;
+    if (completedDays[lockKey]) return;
     const newState = {};
     exercises.forEach((ex) => (newState[ex.id] = !allCompleted));
     setCompletedExercises(newState);
@@ -414,7 +241,6 @@ export default function Dashboard() {
 
   const getWeekStatus = (week) => {
     if (!selectedWorkout) return "not-started";
-
     const dayOrder = [
       "monday",
       "tuesday",
@@ -424,426 +250,391 @@ export default function Dashboard() {
       "saturday",
       "sunday",
     ];
-
-    // Construct keys for all days of the week
     const dayKeys = dayOrder.map(
       (day) => `${selectedWorkout.dbName}_${week}_${day}`
     );
-
-    // Check if each day is completed either from Firestore or local state
     const allDone = dayKeys.every((key) => completedDays[key] === true);
     const anyDone = dayKeys.some((key) => completedDays[key] === true);
-
-    if (allDone) return "completed"; // ✅ green
-    if (anyDone) return "ongoing"; // 🔹 blue
-    return "not-started"; // gray
+    if (allDone) return "completed";
+    if (anyDone) return "ongoing";
+    return "not-started";
   };
 
+  const handleSaveProgress = async () => {
+    if (!userId || !selectedWorkout || !selectedWeek || !selectedDay) return;
+    setSavingNote(true);
+    try {
+      const dateStr = format(new Date(), "yyyy-MM-dd");
+      const progressRef = doc(
+        db,
+        "users",
+        userId,
+        "progress",
+        `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
+      );
+      await setDoc(
+        progressRef,
+        {
+          exercises: completedExercises,
+          notes: notesHistory,
+          completed: Object.values(completedExercises).every((v) => v),
+          date: dateStr,
+        },
+        { merge: true }
+      );
+
+      setCompletedDays((prev) => ({
+        ...prev,
+        [`${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`]:
+          Object.values(completedExercises).every((v) => v),
+      }));
+      await fetchCalendarDates();
+    } catch (err) {
+      console.error("handleSaveProgress error:", err);
+    } finally {
+      setSavingNote(false);
+    }
+  };
+
+  const handleCalendarDateSelect = async (dateStr) => {
+    if (!userId) return;
+    try {
+      const snap = await getDocs(collection(db, "users", userId, "progress"));
+      const matched = snap.docs.filter((d) => d.data()?.date === dateStr);
+
+      if (matched.length === 0) {
+        setCalendarDetails({ date: dateStr, items: [] });
+        setCalendarView(false);
+        return;
+      }
+
+      const items = [];
+      for (const docItem of matched) {
+        const progressId = docItem.id;
+        const [workoutDb, week, day] = progressId.split("_");
+        const progData = docItem.data();
+        const workout = allPrograms.find((p) => p.dbName === workoutDb) || {
+          name: workoutDb,
+          dbName: workoutDb,
+        };
+
+        let exDocs = [];
+        try {
+          const exSnap = await getDocs(
+            collection(
+              db,
+              "workoutTemplates",
+              workoutDb,
+              "weeks",
+              week,
+              "days",
+              day,
+              "exercises"
+            )
+          );
+          exDocs = exSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        } catch {}
+
+        const savedExercises = progData.exercises || {};
+        const exerciseList =
+          exDocs.length > 0
+            ? exDocs.map((ex) => ({
+                id: ex.id,
+                name: ex.name || ex.id,
+                done: !!savedExercises[ex.id],
+              }))
+            : Object.keys(savedExercises).map((id) => ({
+                id,
+                name: id,
+                done: !!savedExercises[id],
+              }));
+
+        items.push({
+          workoutName: workout.name,
+          workoutDb,
+          week,
+          day,
+          exercises: exerciseList,
+          notes: progData.notes || [],
+        });
+      }
+      setCalendarDetails({ date: dateStr, items });
+      setCalendarView(false);
+    } catch (err) {
+      console.error("handleCalendarDateSelect error:", err);
+    }
+  };
+
+  const openCalendarItem = async (item) => {
+    const workout = allPrograms.find((p) => p.dbName === item.workoutDb);
+    if (!workout) return;
+    setSelectedWorkout(workout);
+    setSelectedWeek(item.week);
+    setSelectedDay(item.day);
+    setStarted(true);
+    setNotesHistory(item.notes || []);
+    setCompletedExercises(
+      Object.fromEntries((item.exercises || []).map((e) => [e.id, !!e.done]))
+    );
+    await fetchExercises(workout, item.week, item.day);
+    setCalendarDetails(null);
+  };
+
+  // ------------------- Render -------------------
   return (
     <div className="h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-100 relative">
-      <div className="sticky top-0 z-40 bg-cyan-600">
+      <div className="sticky top-0 z-40">
         <TopBar
-          onCalendar={() => setCalendarView(!calendarView)}
+          onCalendar={() => setCalendarView(true)}
           onNotifications={() => {}}
-          onProfile={() => {}}
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-40">
-        {/* --- Calendar View --- */}
-        {calendarView && (
-          <div className="bg-white rounded-2xl mt-5 shadow-lg p-5 mb-0">
-            {/* Header with Back Button */}
-            <div className="flex items-center gap-3 mb-0">
-              <button
-                onClick={() => setCalendarView(false)} // 👈 back to previous view
-                className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
-              >
-                Back
-              </button>
-            </div>
-            <h2 className="text-xl flex justify-center font-bold mb-3">
-              Workout Calendar
-            </h2>
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {Array.from({ length: 30 }).map((_, i) => {
-                const date = new Date();
-                date.setDate(i + 1);
-                const formattedDate = date.toISOString().split("T")[0];
-                const done = calendarDates.includes(formattedDate);
-                return (
-                  <button
-                    key={formattedDate}
-                    onClick={() => handleDateClick(formattedDate)}
-                    className={`py-2 rounded-lg text-sm font-semibold ${
-                      done ? "bg-cyan-600 text-white" : "bg-gray-100"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                );
-              })}
-            </div>
+      <div className="flex-1 overflow-y-auto px-5 pb-35">
+        {/* Workout Tab */}
+        {activeTab === "workout" && (
+          <>
+            {/* Calendar View */}
+            {calendarView && (
+              <Calendar
+                completedDays={calendarDates.reduce((acc, d) => {
+                  acc[d] = true;
+                  return acc;
+                }, {})}
+                onClose={() => setCalendarView(false)}
+                onSelectDate={handleCalendarDateSelect}
+              />
+            )}
 
-            {selectedDate && (
-              <div>
-                <h3 className="font-semibold mt-5 text-cyan-600 mb-0">
-                  Exercises done on {selectedDate}
-                </h3>
-                {calendarExercises.length === 0 ? (
-                  <p className="text-gray-500">No workout done on this date.</p>
+            {/* Calendar Details */}
+            {calendarDetails && (
+              <div className="bg-white rounded-2xl p-5 mt-5 shadow-lg">
+                <div className="flex justify-start mb-2">
+                  <button
+                    onClick={() => {
+                      setCalendarDetails(null);
+                      setCalendarView(true);
+                    }}
+                    className="text-cyan-600 font-medium"
+                  >
+                    Back to Calendar
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600 font-medium mb-3">
+                  Workout details — {calendarDetails.date}
+                </div>
+
+                {calendarDetails.items.length === 0 ? (
+                  <p className="text-gray-500">
+                    No workouts done on this date.
+                  </p>
                 ) : (
-                  calendarExercises.map((c, idx) => (
-                    <div key={idx} className="mb-3">
-                      <p className="font-semibold">{c.workout}</p>
-                      {Object.keys(c.exercises).map((exId) => (
-                        <p key={exId}>
-                          {exId} - {c.exercises[exId] ? "Done" : "Not Done"}
-                        </p>
-                      ))}
+                  calendarDetails.items.map((item, idx) => (
+                    <div
+                      key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
+                      className="mb-4"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">{item.workoutName}</h4>
+                        <button
+                          onClick={() => openCalendarItem(item)}
+                          className="text-sm text-cyan-600 hover:underline"
+                        >
+                          Open workout
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-1">
+                        Week: {item.week}, Day: {item.day}
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-gray-800">
+                        {item.exercises.map((ex) => (
+                          <li key={ex.id} className="mb-1">
+                            {ex.name}
+                            {ex.done ? (
+                              <span className="ml-2 text-green-600">✓</span>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="bg-gray-50 border rounded-lg p-3 text-sm text-gray-700 mt-2">
+                        <strong>Notes</strong>
+                        {item.notes.length === 0 ? (
+                          <p className="text-gray-500 mt-1">No notes.</p>
+                        ) : (
+                          item.notes.map((n, i) => (
+                            <p key={i} className="mt-1">
+                              {n.note}{" "}
+                              <span className="text-xs text-gray-400">
+                                ({new Date(n.timestamp).toLocaleString()})
+                              </span>
+                            </p>
+                          ))
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
-                {notesHistory.length > 0 && (
-                  <div className="mt-3">
-                    <h4 className="font-semibold mb-1">Notes</h4>
-                    <ul className="space-y-1">
-                      {notesHistory.map((n, idx) => (
-                        <li key={idx} className="text-sm text-gray-700">
-                          {n.note} ({new Date(n.timestamp).toLocaleString()})
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             )}
-          </div>
-        )}
 
-        {currentProgram && !selectedWorkout && (
-          <WorkoutCarousel
-            title="🔥 Ongoing Workout"
-            programs={[currentProgram]}
-            cardHighlight={true} // enable highlight
-            onClickCard={(program) => {
-              setSelectedWorkout(program);
-              setSelectedWeek(null);
-              setSelectedDay(null);
+            {/* Main Dashboard / Workouts */}
+            {!calendarView && !calendarDetails && (
+              <>
+                {/* Current Program Carousel */}
+                {currentProgram && !selectedWorkout && (
+                  <WorkoutCarousel
+                    title="🔥 Ongoing Workout"
+                    programs={[currentProgram]}
+                    cardHighlight
+                    onClickCard={(program) => {
+                      setSelectedWorkout(program);
+                      setSelectedWeek(null);
+                      setSelectedDay(null);
+                      fetchWeeks(program);
+                      setStarted(true);
+                    }}
+                  />
+                )}
 
-              if (currentProgram && currentProgram.dbName === program.dbName) {
-                fetchWeeks(program);
-                setStarted(true);
-              } else {
-                setStarted(false);
-              }
-            }}
-          />
-        )}
+                {/* Workout selection */}
+                {!selectedWorkout && (
+                  <>
+                    <WorkoutCarousel
+                      title="💪 Bodybuilding Workouts"
+                      programs={bodybuilding}
+                      onClickCard={(p) => setSelectedWorkout(p)}
+                    />
+                    <WorkoutCarousel
+                      title="🔥 Fat Loss Programs"
+                      programs={fatloss}
+                      onClickCard={(p) => setSelectedWorkout(p)}
+                    />
+                    <WorkoutCarousel
+                      title="🩺 Rehab Programs"
+                      programs={rehab}
+                      onClickCard={(p) => setSelectedWorkout(p)}
+                    />
+                  </>
+                )}
 
-        {!calendarView && activeTab === "workout" && !selectedWorkout && (
-          <>
-            <WorkoutCarousel
-              title="💪 Bodybuilding Workouts"
-              programs={bodybuilding}
-              onClickCard={(program) => {
-                setSelectedWorkout(program);
-                setStarted(false); // Always new, so show Program Info
-              }}
-            />
-            <WorkoutCarousel
-              title="🔥 Fat Loss Programs"
-              programs={fatloss}
-              onClickCard={(program) => {
-                setSelectedWorkout(program);
-                setStarted(false);
-              }}
-            />
+                {/* Workout Info / Start */}
+                {selectedWorkout && !started && (
+                  <WorkoutInfo
+                    workout={selectedWorkout}
+                    onBack={() => setSelectedWorkout(null)}
+                    onStart={async () => {
+                      if (!userId) return;
+                      try {
+                        const today = format(new Date(), "yyyy-MM-dd");
+                        await setDoc(
+                          doc(db, "users", userId),
+                          {
+                            currentProgram: selectedWorkout.dbName,
+                            programStartDate: programStartDate || today,
+                          },
+                          { merge: true }
+                        );
+                        setCurrentProgram(selectedWorkout);
+                        setProgramStartDate(programStartDate || today);
+                        await fetchWeeks(selectedWorkout);
+                        setStarted(true);
+                      } catch (err) {
+                        console.error("onStart error:", err);
+                      }
+                    }}
+                  />
+                )}
 
-            <WorkoutCarousel
-              title="🩺 Rehab Programs"
-              programs={rehab}
-              onClickCard={(program) => {
-                setSelectedWorkout(program);
-                setStarted(false);
-              }}
-            />
+                {/* Week Selector */}
+                {selectedWorkout && started && !selectedWeek && (
+                  <WeekSelector
+                    weeks={weeks}
+                    getWeekStatus={getWeekStatus}
+                    onSelectWeek={(w) =>
+                      fetchDays(selectedWorkout, w).then(() =>
+                        setSelectedWeek(w)
+                      )
+                    }
+                    onBack={() => {
+                      setStarted(false);
+                      setSelectedWeek(null);
+                    }}
+                    isProgramStarted={
+                      !!(
+                        currentProgram &&
+                        selectedWorkout &&
+                        currentProgram.dbName === selectedWorkout.dbName
+                      )
+                    }
+                    goToDashboard={() => {
+                      setSelectedWorkout(null);
+                      setSelectedWeek(null);
+                      setSelectedDay(null);
+                      setStarted(false);
+                    }}
+                  />
+                )}
+
+                {/* Day Selector */}
+                {selectedWeek && !selectedDay && (
+                  <DaySelector
+                    days={days}
+                    completedDays={completedDays}
+                    selectedWorkout={selectedWorkout}
+                    selectedWeek={selectedWeek}
+                    onSelectDay={(d) =>
+                      fetchExercises(selectedWorkout, selectedWeek, d).then(
+                        () => setSelectedDay(d)
+                      )
+                    }
+                    onBack={() => setSelectedWeek(null)}
+                  />
+                )}
+
+                {/* Exercises List */}
+                {selectedDay && (
+                  <ExercisesList
+                    exercises={exercises}
+                    completedExercises={completedExercises}
+                    handleToggleExercise={handleToggleExercise}
+                    handleToggleAll={handleToggleAll}
+                    allCompleted={allCompleted}
+                    noteInput={noteInput}
+                    setNoteInput={setNoteInput}
+                    notesHistory={notesHistory}
+                    setNotesHistory={setNotesHistory}
+                    savingNote={savingNote}
+                    setSavingNote={setSavingNote}
+                    handleSaveProgress={handleSaveProgress}
+                    selectedWorkout={selectedWorkout}
+                    selectedWeek={selectedWeek}
+                    selectedDay={selectedDay}
+                    completedDays={completedDays}
+                    userId={userId}
+                    db={db}
+                    setSelectedDay={setSelectedDay}
+                    setSelectedWeek={setSelectedWeek}
+                    setStarted={setStarted}
+                    setSelectedWorkout={setSelectedWorkout}
+                  />
+                )}
+              </>
+            )}
           </>
         )}
 
-        {/* Workout info before start */}
-        {!calendarView && selectedWorkout && !started && (
-          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
-            {/* Back button */}
-            <button
-              className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
-              onClick={() => setSelectedWorkout(null)}
-            >
-              <span>Back</span>
-            </button>
+        {/* Diet Tab */}
+        {activeTab === "diet" && <DietDashboard />}
 
-            {/* Program Info */}
-            <img
-              src={selectedWorkout.img}
-              alt={selectedWorkout.name}
-              className="w-full h-60 object-cover rounded-2xl mb-4"
-            />
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              {selectedWorkout.name}
-            </h2>
-            <p className="text-sm text-gray-500 mb-2">
-              {selectedWorkout.phases}
-            </p>
-
-            {/* Start Program Button */}
-            <button
-              className="w-full py-3 bg-cyan-600 text-white font-bold rounded-2xl hover:bg-cyan-700 transition"
-              onClick={async () => {
-                try {
-                  // save program as current in Firestore
-                  const userRef = doc(db, "users", userId);
-                  await setDoc(
-                    userRef,
-                    { currentProgram: selectedWorkout.dbName },
-                    { merge: true }
-                  );
-
-                  // set state for UI
-                  setCurrentProgram(selectedWorkout); // show "Current Workout" at top
-                  await fetchWeeks(selectedWorkout); // load weeks
-                  setStarted(true);
-                } catch (err) {
-                  console.error("Error starting program:", err);
-                }
-              }}
-            >
-              Start Program
-            </button>
-          </div>
+        {/* Other Tabs */}
+        {activeTab === "progress" && (
+          <div className="text-center text-gray-500 mt-10">Progress Tab</div>
         )}
-        {/* Weeks */}
-        {!calendarView && selectedWorkout && started && !selectedWeek && (
-          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
-            <button
-              onClick={() => {
-                if (
-                  currentProgram &&
-                  currentProgram.dbName === selectedWorkout.dbName
-                ) {
-                  // If it's current program → back to Dashboard
-                  setSelectedWorkout(null);
-                  setSelectedWeek(null);
-                  setSelectedDay(null);
-                  setStarted(false);
-                } else {
-                  // If it's a new program not started yet → back to program info
-                  setStarted(false);
-                  setSelectedWeek(null);
-                  setSelectedDay(null);
-                }
-              }}
-              className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
-            >
-              <span>Back</span>
-            </button>
-            <h2 className="text-xl flex justify-center font-bold mb-5">
-              Select a Week
-            </h2>
-            <div className="grid  grid-cols-2 gap-3">
-              {weeks.map((week) => {
-                const displayWeek = week.replace(/([a-zA-Z]+)(\d+)/, "$1 $2");
-                const status = getWeekStatus(week);
-
-                let bgClass = "bg-gray-100 hover:bg-cyan-100 text-gray-800"; // not-started
-                if (status === "completed") bgClass = "bg-green-500 text-white"; // ✅ fully done
-                if (status === "ongoing") bgClass = "bg-blue-200 text-blue-800"; // 🔹 partially done
-
-                return (
-                  <button
-                    key={week}
-                    onClick={() =>
-                      fetchDays(selectedWorkout, week).then(() =>
-                        setSelectedWeek(week)
-                      )
-                    }
-                    className={`p-4 rounded-xl text-center font-semibold ${bgClass}`}
-                  >
-                    {displayWeek}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        {activeTab === "explore" && (
+          <div className="text-center text-gray-500 mt-10">Explore Tab</div>
         )}
-        {/* Days */}
-        {!calendarView && selectedWeek && !selectedDay && (
-          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
-            <button
-              className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
-              onClick={() => setSelectedWeek(null)}
-            >
-              Back
-            </button>
-            <h2 className="text-xl flex justify-center font-bold mb-5">
-              Select a Day
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {days.map((day) => {
-                const dayKey = `${selectedWorkout.dbName}_${selectedWeek}_${day}`;
-                const isCompleted = completedDays[dayKey];
-                return (
-                  <button
-                    key={day}
-                    onClick={() =>
-                      fetchExercises(selectedWorkout, selectedWeek, day).then(
-                        () => setSelectedDay(day)
-                      )
-                    }
-                    className={`p-4 rounded-xl text-center font-semibold ${
-                      isCompleted
-                        ? "bg-green-500 text-white"
-                        : "bg-gray-100 hover:bg-cyan-100"
-                    }`}
-                  >
-                    {day}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        {/* Exercises + Notes */}
-        {!calendarView && selectedDay && (
-          <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
-            <button
-              className="flex cursor-pointer items-center gap-2 text-cyan-600 font-medium mb-4"
-              onClick={() => setSelectedDay(null)}
-            >
-              Back
-            </button>
-            <h2 className="text-xl font-bold mb-4 capitalize">
-              {selectedWorkout.name} - {selectedWeek} - {selectedDay}
-            </h2>
-
-            <div className="space-y-4 mb-6">
-              {exercises.map((ex) => (
-                <div
-                  key={ex.id}
-                  className="border rounded-xl p-3 flex flex-col md:flex-row items-start gap-4"
-                >
-                  <div className="w-full md:w-40 h-40 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      src={ex.imgurl}
-                      alt={ex.name}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg">{ex.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {ex.sets} sets × {ex.reps}
-                    </p>
-                    <label className="flex items-center mt-2">
-                      <input
-                        type="checkbox"
-                        checked={completedExercises[ex.id] || false}
-                        onChange={() =>
-                          !completedDays[
-                            `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-                          ] && handleToggleExercise(ex.id)
-                        }
-                        className="mr-2"
-                        disabled={
-                          completedDays[
-                            `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-                          ]
-                        } // lock if completed
-                      />
-                      Mark Done
-                    </label>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Notes Section */}
-            <div className="mb-4">
-              {completedDays[
-                `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-              ] ? (
-                // ✅ Show saved notes only (read-only view)
-                noteInput ? (
-                  <div className="p-3 border rounded-lg bg-gray-100 text-sm text-gray-700">
-                    <strong>My Notes:</strong>
-                    <p className="mt-1 whitespace-pre-line">{noteInput}</p>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm italic">
-                    No notes were added for this workout.
-                  </p>
-                )
-              ) : (
-                // ✅ Show textarea + save button before workout completion
-                <>
-                  <textarea
-                    value={noteInput}
-                    onChange={(e) => setNoteInput(e.target.value)}
-                    placeholder="Write a note about today's workout..."
-                    className="w-full border rounded-lg p-3 text-sm"
-                    rows={3}
-                  />
-                  <button
-                    onClick={saveNote}
-                    disabled={savingNote}
-                    className={`mt-2 py-2 px-4 rounded-lg transition ${
-                      savingNote
-                        ? "bg-gray-400 text-white cursor-not-allowed"
-                        : "bg-cyan-600 text-white hover:bg-cyan-700"
-                    }`}
-                  >
-                    {savingNote ? "Saving..." : "Save Note"}
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="mb-4 flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={allCompleted}
-                onChange={handleToggleAll}
-                disabled={
-                  completedDays[
-                    `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-                  ]
-                } // lock if completed
-              />
-              <span className="font-semibold">Workout Completed</span>
-            </div>
-
-            {/* Save Progress Button */}
-            <button
-              onClick={saveProgress}
-              disabled={
-                completedDays[
-                  `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-                ]
-              }
-              className={`w-full py-3 font-bold rounded-2xl transition ${
-                completedDays[
-                  `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-                ]
-                  ? "bg-green-500 text-white cursor-not-allowed"
-                  : "bg-cyan-600 text-white hover:bg-cyan-700"
-              }`}
-            >
-              {completedDays[
-                `${selectedWorkout.dbName}_${selectedWeek}_${selectedDay}`
-              ]
-                ? "Workout Completed ✅"
-                : "Save Progress"}
-            </button>
-          </div>
+        {activeTab === "chat" && (
+          <div className="text-center text-gray-500 mt-10">Chat Tab</div>
         )}
       </div>
 

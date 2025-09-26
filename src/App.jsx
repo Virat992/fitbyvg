@@ -10,6 +10,8 @@ import OnboardingRoute from "./routes/OnboardingRoute.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
 import AddWorkout from "./admin/AddWorkout.jsx";
+import FoodBuilder from "./admin/FoodBuilder.jsx";
+import MockDietDashboard from "./components/diet/MockDietDashboard.jsx";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/workout" element={<WorkoutTemplates />} />
         <Route path="/addworkout" element={<AddWorkout />} />
+        <Route path="/foodbuilder" element={<FoodBuilder />} />
+        <Route path="/diet" element={<MockDietDashboard />} />
 
         {/* Onboarding route */}
         <Route
