@@ -1,4 +1,3 @@
-// src/components/diet/DietDashboard.jsx
 import { useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
@@ -40,7 +39,7 @@ export default function DietDashboard() {
   const [selectedFood, setSelectedFood] = useState(null);
   const [quantity, setQuantity] = useState(100);
   const [query, setQuery] = useState("");
-  const [expandedMeals, setExpandedMeals] = useState({}); // ✅ store expanded state
+  const [expandedMeals, setExpandedMeals] = useState({});
 
   const toggleExpanded = (idx) => {
     setExpandedMeals((prev) => ({
@@ -66,18 +65,6 @@ export default function DietDashboard() {
     setQuery("");
   };
 
-  const calorieData = {
-    labels: ["Consumed", "Remaining"],
-    datasets: [
-      {
-        data: [consumedCalories, remainingCalories],
-        backgroundColor: ["#22c55e", "#d1d5db"],
-        borderWidth: 0,
-      },
-    ],
-  };
-
-  // Cards data
   const cards = [
     {
       id: "calories",
@@ -94,7 +81,7 @@ export default function DietDashboard() {
                   datasets: [
                     {
                       data: [consumedCalories, remainingCalories],
-                      backgroundColor: ["#e0f2fe", "#06b6d4"], // light cyan & cyan-600
+                      backgroundColor: ["#e0f2fe", "#06b6d4"],
                       borderColor: ["#e0f2fe", "#06b6d4"],
                       borderWidth: 2,
                     },
@@ -122,25 +109,32 @@ export default function DietDashboard() {
             </div>
 
             {/* Info panel */}
-            <div className="flex flex-col space-y-1 text-sm text-gray-700">
+            <div className="flex flex-col space-y-1 text-xs text-gray-600">
               <div className="flex items-center space-x-2">
-                <FaUtensils className="text-gray-400" />
-                <span>Meals: {meals.length}</span>
+                <FaUtensils className="text-gray-400 text-sm" />
+                <span>
+                  Meals: <span className="font-semibold">{meals.length}</span>
+                </span>
               </div>
               <div className="flex items-center space-x-2">
-                <FaFire className="text-gray-400" />
-                <span>Consumed: {consumedCalories} kcal</span>
+                <FaFire className="text-gray-400 text-sm" />
+                <span>
+                  Consumed:{" "}
+                  <span className="font-semibold">{consumedCalories} kcal</span>
+                </span>
               </div>
               <div className="flex items-center space-x-2">
-                <FaHourglassHalf className="text-gray-400" />
-                <span>Daily Limit: {dailyLimit} kcal</span>
+                <FaHourglassHalf className="text-gray-400 text-sm" />
+                <span>
+                  Daily Limit:{" "}
+                  <span className="font-semibold">{dailyLimit} kcal</span>
+                </span>
               </div>
             </div>
           </div>
         </div>
       ),
-      bg: "bg-white shadow-lg", // add shadow to card
-      style: { flexShrink: 0, width: "80%" }, // make next card partially visible
+      bg: "bg-white shadow-lg",
     },
     {
       id: "macros",
@@ -172,23 +166,27 @@ export default function DietDashboard() {
   ];
 
   return (
-    <div className="p-5 max-w-xl mx-auto space-y-6">
+    <div className="py-4 max-w-xl mx-auto space-y-6">
       {/* Top: Today + Adjust Info */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-3xl font-bold text-gray-800">Today</h2>
+        <h2 className="text-[22px] font-bold text-gray-800">Today</h2>
         <button className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-3 py-1.5 rounded-xl shadow-lg text-sm">
           Adjust Info
         </button>
       </div>
 
       {/* Cards Carousel */}
-      <div className="flex overflow-x-auto snap-x snap-mandatory space-x-4 scrollbar-hide">
+      <div className="flex overflow-x-auto overflow-y-visible snap-x snap-mandatory space-x-4 scrollbar-hide pb-2">
         {cards.map((card) => (
           <div
             key={card.id}
-            className={`${card.bg} snap-start flex-shrink-0 w-full rounded-2xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transform transition`}
+            className={`${card.bg} snap-start flex-shrink-0 w-[85%] rounded-2xl shadow-lg p-5 flex flex-col items-center hover:scale-105 transform transition`}
           >
-            <h3 className="text-white text-lg font-semibold mb-2">
+            <h3
+              className={`text-lg font-semibold mb-4 ${
+                card.id === "calories" ? "text-gray-800" : "text-white"
+              }`}
+            >
               {card.title}
             </h3>
             {card.content}
@@ -227,6 +225,7 @@ export default function DietDashboard() {
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
             />
+
             <div className="max-h-36 overflow-y-auto border border-gray-200 rounded-xl mb-4">
               {filteredFood.map((f) => (
                 <div
@@ -240,6 +239,7 @@ export default function DietDashboard() {
                 </div>
               ))}
             </div>
+
             <div className="flex justify-between">
               <button
                 onClick={addMealHandler}
@@ -276,7 +276,6 @@ export default function DietDashboard() {
                 {expandedMeals[idx] ? "Collapse" : "Expand"}
               </button>
             </div>
-
             {expandedMeals[idx] && (
               <div className="mt-2 text-gray-500 text-sm space-y-1">
                 <p>Food: {meal.name}</p>
