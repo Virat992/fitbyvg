@@ -624,7 +624,7 @@ export default function Dashboard() {
         )}
 
         {/* Diet Tab */}
-        {activeTab === "diet" && <DietDashboard />}
+        {activeTab === "diet" && userId && <DietDashboard userId={userId} />}
 
         {/* Other Tabs */}
         {activeTab === "progress" && (

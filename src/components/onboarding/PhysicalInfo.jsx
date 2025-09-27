@@ -8,6 +8,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
   const [formData, setFormData] = useState({
     gender: "",
     physicalActivity: "",
+    age: "",
     height: "",
     weight: "",
     goalWeight: "",
@@ -22,12 +23,14 @@ export default function PhysicalInfo({ onNext, onBack }) {
   };
 
   const handleNext = () => {
-    const { gender, physicalActivity, height, weight, goalWeight } = formData;
-    if (gender && physicalActivity && height && weight && goalWeight) {
+    const { gender, physicalActivity, age, height, weight, goalWeight } =
+      formData;
+    if (gender && physicalActivity && age && height && weight && goalWeight) {
       onNext({
         physicalInfo: {
           gender,
           physicalActivity,
+          age: parseInt(age, 10),
           height: parseFloat(height),
           weight: parseFloat(weight),
           goalWeight: parseFloat(goalWeight),
@@ -48,6 +51,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
   const isFormValid =
     formData.gender &&
     formData.physicalActivity &&
+    formData.age &&
     formData.height &&
     formData.weight &&
     formData.goalWeight;
@@ -136,6 +140,24 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 Very Active (hard exercise daily)
               </option>
             </select>
+          </div>
+
+          {/* Age Input */}
+          <div className="mb-6 px-0">
+            <label className="block text-gray-600 text-base mb-3">
+              How old are you?
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={formData.age}
+                onChange={(e) => handleInputChange("age", e.target.value)}
+                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+              />
+              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 rounded-xl font-semibold text-lg">
+                yrs
+              </div>
+            </div>
           </div>
 
           {/* Height Input */}
