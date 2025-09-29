@@ -6,6 +6,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { getAuth } from "firebase/auth";
 import { FaSlidersH } from "react-icons/fa";
+import { collection, getDocs } from "firebase/firestore";
+import AddMealModal from "./AddMealModal";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -14,12 +16,10 @@ export default function DietDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [meals, setMeals] = useState([]);
-  const [addingMeal, setAddingMeal] = useState(false);
   const [adjustingInfo, setAdjustingInfo] = useState(false);
-  const [selectedFood, setSelectedFood] = useState(null);
-  const [quantity, setQuantity] = useState(100);
   const [query, setQuery] = useState("");
   const [expandedMeals, setExpandedMeals] = useState({});
+  const [mealToEdit, setMealToEdit] = useState(null);
   const [editInfo, setEditInfo] = useState({
     age: 25,
     height: 170,
@@ -36,6 +36,12 @@ export default function DietDashboard() {
   });
   const [adjustingMacros, setAdjustingMacros] = useState(false);
   const [tempMacros, setTempMacros] = useState({ ...macros });
+  const [foodItems, setFoodItems] = useState([]);
+  const [addingMeal, setAddingMeal] = useState(false);
+  const [currentFood, setCurrentFood] = useState(null);
+  const [currentQty, setCurrentQty] = useState(100);
+  const [mealItems, setMealItems] = useState([]);
+  const [activeSegment, setActiveSegment] = useState(null);
 
   const mockFoodList = [
     { id: "1", name: "Chicken Breast", caloriesPer100g: 165 },
@@ -43,6 +49,22 @@ export default function DietDashboard() {
     { id: "3", name: "Broccoli", caloriesPer100g: 34 },
     { id: "4", name: "Egg", caloriesPer100g: 155 },
   ];
+
+  // ---------- Save meals when they change ----------
+  useEffect(() => {
+    const saveMeals = async () => {
+      if (!user) return; // make sure user is loaded
+
+      try {
+        const userRef = doc(db, "users", user.email);
+        await setDoc(userRef, { meals }, { merge: true }); // merge to not overwrite other fields
+      } catch (err) {
+        console.error("Failed to save meals:", err);
+      }
+    };
+
+    saveMeals();
+  }, [meals, user]);
 
   // ---------- Fetch user ----------
   useEffect(() => {
@@ -61,6 +83,8 @@ export default function DietDashboard() {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUser(data);
+          // Load saved meals
+          setMeals(data.meals || []);
 
           setEditInfo({
             age: data.onboarding?.physicalInfo?.age || 25,
@@ -81,6 +105,24 @@ export default function DietDashboard() {
     };
 
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const fetchFoodItems = async () => {
+      try {
+        const foodCol = collection(db, "foodItems"); // your Firestore collection name
+        const foodSnapshot = await getDocs(foodCol);
+        const foods = foodSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setFoodItems(foods);
+      } catch (error) {
+        console.error("Failed to fetch food items:", error);
+      }
+    };
+
+    fetchFoodItems();
   }, []);
 
   // ---------- Maintenance calculation ----------
@@ -130,18 +172,55 @@ export default function DietDashboard() {
     f.name.toLowerCase().includes(query.toLowerCase())
   );
 
-  const addMealHandler = () => {
-    if (!selectedFood) return;
-    const calories = (selectedFood.caloriesPer100g * quantity) / 100;
-    setMeals([...meals, { ...selectedFood, quantity, calories }]);
+  const saveMealHandler = () => {
+    if (mealItems.length === 0) return; // nothing to save
+
+    // Calculate total calories for the meal
+    const totalCalories = mealItems.reduce(
+      (sum, item) => sum + item.calories,
+      0
+    );
+
+    // Add all items as a single meal entry
+    setMeals([
+      ...meals,
+      {
+        id: Date.now(), // unique id
+        name: mealItems.map((i) => i.name).join(", "),
+        calories: totalCalories,
+        items: mealItems,
+      },
+    ]);
+
+    // Reset modal state
+    setMealItems([]);
+    setCurrentFood(null);
+    setCurrentQty(100);
     setAddingMeal(false);
-    setSelectedFood(null);
-    setQuantity(100);
-    setQuery("");
   };
 
   const toggleExpanded = (idx) => {
     setExpandedMeals((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  // Calculate consumed macros from meals
+  const consumedMacros = meals.reduce(
+    (acc, meal) => {
+      meal.items.forEach((item) => {
+        acc.protein += item.protein || 0;
+        acc.carbs += item.carbs || 0;
+        acc.fat += item.fat || 0;
+      });
+      return acc;
+    },
+    { protein: 0, carbs: 0, fat: 0 }
+  );
+
+  // Calculate remaining macros
+  const remainingMacros = {
+    protein: Math.max(macros.protein - consumedMacros.protein, 0),
+    carbs: Math.max(macros.carbs - consumedMacros.carbs, 0),
+    fat: Math.max(macros.fat - consumedMacros.fat, 0),
   };
 
   const cards = [
@@ -163,42 +242,82 @@ export default function DietDashboard() {
           {/* Doughnut + Info */}
           <div className="flex items-center justify-around space-x-4">
             <div className="relative w-24 h-24 flex-shrink-0">
-              <Doughnut
-                data={{
-                  labels: ["Consumed", "Remaining"],
-                  datasets: [
-                    {
-                      data: [consumedCalories, remainingCalories],
-                      backgroundColor: ["#dbeafe", "#3b82f6"],
-                      borderColor: ["#dbeafe", "#3b82f6"],
-                      borderWidth: 2,
-                    },
-                  ],
-                }}
-                options={{
-                  cutout: "70%",
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true },
-                  },
-                }}
-                className="w-full h-full"
-              />
-              <div className="absolute inset-0 grid place-items-center pointer-events-none text-center">
-                <span className="text-sm mt-8 font-bold text-white">
-                  {remainingCalories}
-                </span>
-                <span className="text-[8px] mt-0 mb-9 ml-1 text-white">
-                  Remaining
-                </span>
-              </div>
+              {/* Calculate surplus */}
+              {(() => {
+                const remaining = dailyLimit - consumedCalories;
+                const isSurplus = remaining < 0;
+                const displayCalories = Math.abs(remaining);
+                const chartLabels = isSurplus
+                  ? ["Consumed", "Surplus"]
+                  : ["Consumed", "Remaining"];
+                const chartColors = isSurplus
+                  ? ["#dbeafe", "#ef4444"]
+                  : ["#dbeafe", "#3b82f6"];
+                const chartData = isSurplus
+                  ? [dailyLimit, consumedCalories - dailyLimit]
+                  : [consumedCalories, remaining];
+
+                return (
+                  <>
+                    <Doughnut
+                      data={{
+                        labels: chartLabels,
+                        datasets: [
+                          {
+                            data: chartData,
+                            backgroundColor: ["#34D399", "#D1FAE5"],
+                            borderWidth: 0,
+                          },
+                        ],
+                      }}
+                      options={{
+                        cutout: "70%",
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: false },
+                        },
+                        onHover: (event, chartElements) => {
+                          if (chartElements.length > 0) {
+                            setActiveSegment(chartElements[0].index); // 0 = consumed, 1 = remaining
+                          } else {
+                            setActiveSegment(null);
+                          }
+                        },
+                      }}
+                      className="w-full h-full"
+                    />
+
+                    <div className="absolute inset-0 grid place-items-center pointer-events-none text-center">
+                      <span className="text-sm mt-8 font-bold text-white">
+                        {activeSegment === 0
+                          ? chartData[0]
+                          : activeSegment === 1
+                          ? chartData[1]
+                          : displayCalories}
+                      </span>
+                      <span className="text-[8px] mt-0 mb-9 ml-1 text-white">
+                        {activeSegment === 0
+                          ? "Consumed"
+                          : activeSegment === 1
+                          ? isSurplus
+                            ? "Surplus"
+                            : "Remaining"
+                          : isSurplus
+                          ? "Surplus"
+                          : "Remaining"}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
+            {/* Info panel */}
             <div className="flex flex-col space-y-1 text-xs text-white">
               <div className="flex items-center space-x-1">
                 <FaUtensils className="text-white text-sm" />
                 <span>
-                  Meals: <span className="font-semibold">{meals.length}</span>
+                  Meals: <span className="font-semibold">0</span>
                 </span>
               </div>
               <div className="flex items-center space-x-1">
@@ -221,6 +340,7 @@ export default function DietDashboard() {
       ),
       bg: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg rounded-2xl",
     },
+
     {
       id: "macros",
       content: (
@@ -238,95 +358,73 @@ export default function DietDashboard() {
 
           {/* Doughnuts */}
           <div className="flex justify-around items-center pb-6 py-4 space-x-3">
-            {/* Protein */}
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <Doughnut
-                data={{
-                  labels: ["Consumed", "Remaining"],
-                  datasets: [
-                    {
-                      data: [macros.protein, Math.max(200 - macros.protein, 0)],
-                      backgroundColor: ["#34D399", "#D1FAE5"],
-                      borderWidth: 0,
-                    },
-                  ],
-                }}
-                options={{
-                  cutout: "70%",
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true },
-                  },
-                }}
-                className="w-full h-full"
-              />
-              <div className="absolute inset-0 grid place-items-center text-xs font-bold text-white">
-                {macros.protein}g
-              </div>
-              <div className="absolute bottom-[-1.25rem] w-full text-center text-white text-[10px]">
-                Protein
-              </div>
-            </div>
+            {["protein", "carbs", "fat"].map((macro) => {
+              const consumed = consumedMacros[macro];
+              const remaining = remainingMacros[macro];
+              const chartColors =
+                macro === "protein"
+                  ? ["#34D399", "#D1FAE5"]
+                  : macro === "carbs"
+                  ? ["#3B82F6", "#BFDBFE"]
+                  : ["#FACC15", "#FEF3C7"];
+              const [activeSegment, setActiveSegment] = useState(null);
 
-            {/* Carbs */}
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <Doughnut
-                data={{
-                  labels: ["Consumed", "Remaining"],
-                  datasets: [
-                    {
-                      data: [macros.carbs, Math.max(300 - macros.carbs, 0)],
-                      backgroundColor: ["#3B82F6", "#BFDBFE"],
-                      borderWidth: 0,
-                    },
-                  ],
-                }}
-                options={{
-                  cutout: "70%",
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true },
-                  },
-                }}
-                className="w-full h-full"
-              />
-              <div className="absolute inset-0 grid place-items-center text-xs font-bold text-white">
-                {macros.carbs}g
-              </div>
-              <div className="absolute bottom-[-1.25rem] w-full text-center text-white text-[10px]">
-                Carbs
-              </div>
-            </div>
+              return (
+                <div key={macro} className="relative w-20 h-20 flex-shrink-0">
+                  <Doughnut
+                    data={{
+                      labels: ["Consumed", "Remaining"],
+                      datasets: [
+                        {
+                          data: [consumed, remaining],
+                          backgroundColor: chartColors,
+                          borderWidth: 0,
+                        },
+                      ],
+                    }}
+                    options={{
+                      cutout: "70%",
+                      plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                      },
+                      onHover: (event, chartElements) => {
+                        if (chartElements.length > 0) {
+                          setActiveSegment(chartElements[0].index);
+                        } else {
+                          setActiveSegment(null);
+                        }
+                      },
+                    }}
+                    className="w-full h-full"
+                  />
 
-            {/* Fat */}
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <Doughnut
-                data={{
-                  labels: ["Consumed", "Remaining"],
-                  datasets: [
-                    {
-                      data: [macros.fat, Math.max(100 - macros.fat, 0)],
-                      backgroundColor: ["#FACC15", "#FEF3C7"],
-                      borderWidth: 0,
-                    },
-                  ],
-                }}
-                options={{
-                  cutout: "70%",
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { enabled: true },
-                  },
-                }}
-                className="w-full h-full"
-              />
-              <div className="absolute inset-0 grid place-items-center text-xs font-bold text-white">
-                {macros.fat}g
-              </div>
-              <div className="absolute bottom-[-1.25rem] w-full text-center text-white text-[10px]">
-                Fat
-              </div>
-            </div>
+                  {/* Center Text */}
+                  <div className="absolute inset-0 grid place-items-center text-center pointer-events-none">
+                    <div className="text-xs mt-7 font-bold text-white">
+                      {activeSegment === 0
+                        ? consumed
+                        : activeSegment === 1
+                        ? remaining
+                        : remaining}
+                      g
+                    </div>
+                    <div className="text-[8px] text-white mb-10">
+                      {activeSegment === 0
+                        ? "Consumed"
+                        : activeSegment === 1
+                        ? "Remaining"
+                        : "Remaining"}
+                    </div>
+                  </div>
+
+                  {/* Macro Label */}
+                  <div className="absolute bottom-[-1.25rem] w-full text-center text-white text-[10px]">
+                    {macro.charAt(0).toUpperCase() + macro.slice(1)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       ),
@@ -367,29 +465,67 @@ export default function DietDashboard() {
       </div>
 
       {/* Meals List */}
-      <div className="space-y-3 mt-4">
-        {meals.map((meal, idx) => (
-          <div key={idx} className="bg-white rounded-2xl shadow-md p-4 border">
-            <div className="flex justify-between items-center">
-              <h4 className="font-semibold text-gray-800 text-lg">
-                Meal {idx + 1} - {Math.round(meal.calories)} kcal
-              </h4>
-              <button
-                onClick={() => toggleExpanded(idx)}
-                className="text-sm text-cyan-600 hover:underline"
-              >
-                {expandedMeals[idx] ? "Collapse" : "Expand"}
-              </button>
-            </div>
-            {expandedMeals[idx] && (
-              <div className="mt-2 text-gray-500 text-sm space-y-1">
-                <p>Food: {meal.name}</p>
-                <p>Quantity: {meal.quantity} g</p>
-                <p>Calories/100g: {meal.caloriesPer100g} kcal</p>
-              </div>
-            )}
+
+      <div className="space-y-3 mt-4 max-h-50 overflow-y-auto">
+        {meals.length === 0 ? (
+          <div className="text-center text-gray-400 py-6">
+            Log your first meal 🍽️
           </div>
-        ))}
+        ) : (
+          meals.map((meal, idx) => (
+            <div
+              key={idx}
+              className="bg-white rounded-2xl shadow-md p-4 border"
+            >
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold text-gray-800 text-md">
+                  Meal {idx + 1} - {Math.round(meal.calories)} kcal
+                </h4>
+                <button
+                  onClick={() => toggleExpanded(idx)}
+                  className="text-sm text-cyan-600 hover:underline"
+                >
+                  {expandedMeals[idx] ? "Collapse" : "Expand"}
+                </button>
+              </div>
+              {expandedMeals[idx] && (
+                <div className="mt-2 text-gray-500 text-sm space-y-1">
+                  {meal.items.map((item, i) => (
+                    <div key={i} className="flex justify-between">
+                      <span>
+                        {item.quantity} × {item.name}
+                      </span>
+                      <span>{item.calories} kcal</span>
+                    </div>
+                  ))}
+
+                  {/* Action buttons */}
+                  <div className="flex justify-end space-x-2 mt-2">
+                    <button
+                      onClick={() => {
+                        const updated = meals.filter((m) => m.id !== meal.id);
+                        setMeals(updated);
+                      }}
+                      className="text-red-500 hover:underline text-sm"
+                    >
+                      Delete
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMealToEdit(meal);
+                        setAddingMeal(true);
+                      }}
+                      className="text-blue-500 hover:underline text-sm"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       {/* Adjust Info Modal */}
@@ -637,68 +773,28 @@ export default function DietDashboard() {
 
       {/* Add Meal Modal */}
       {addingMeal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-4">
-          <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg p-6 w-full max-w-md space-y-4">
-            <h3 className="text-xl font-semibold text-gray-700 mb-4">
-              Add Meal
-            </h3>
-
-            <div>
-              <label className="block font-bold text-gray-600 mb-1">
-                Search Food
-              </label>
-              <input
-                type="text"
-                placeholder="Search food..."
-                className="w-full p-3 border rounded-xl mb-4"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-gray-600 mb-1">
-                Quantity (grams)
-              </label>
-              <input
-                type="number"
-                placeholder="Quantity in grams"
-                className="w-full p-3 border rounded-xl mb-4"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-              />
-            </div>
-
-            <div className="max-h-36 overflow-y-auto border rounded-xl mb-4">
-              {filteredFood.map((f) => (
-                <div
-                  key={f.id}
-                  className={`p-2 cursor-pointer hover:bg-gray-100 ${
-                    selectedFood?.id === f.id ? "bg-gray-200" : ""
-                  }`}
-                  onClick={() => setSelectedFood(f)}
-                >
-                  {f.name} - {f.caloriesPer100g} kcal /100g
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between">
-              <button
-                onClick={addMealHandler}
-                className="bg-green-500 text-white px-4 py-2 rounded-xl"
-              >
-                Add
-              </button>
-              <button
-                onClick={() => setAddingMeal(false)}
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <AddMealModal
+          mealToEdit={mealToEdit} // pass meal to modal (optional for prefilling)
+          onClose={() => {
+            setAddingMeal(false);
+            setMealToEdit(null); // reset after closing
+          }}
+          onSave={(meal) => {
+            if (mealToEdit) {
+              // EDIT: replace the existing meal
+              setMeals(
+                meals.map((m) =>
+                  m.id === mealToEdit.id ? { ...mealToEdit, ...meal } : m
+                )
+              );
+            } else {
+              // ADD: new meal
+              setMeals([...meals, { ...meal, id: Date.now() }]);
+            }
+            setAddingMeal(false);
+            setMealToEdit(null);
+          }}
+        />
       )}
     </div>
   );
