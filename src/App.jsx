@@ -12,6 +12,7 @@ import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
 import AddWorkout from "./admin/AddWorkout.jsx";
 import FoodBuilder from "./admin/FoodBuilder.jsx";
 import MockDietDashboard from "./components/diet/MockDietDashboard.jsx";
+import DietDashboard from "./components/diet/DietDashboard.jsx";
 
 function App() {
   return (
@@ -24,7 +25,14 @@ function App() {
         <Route path="/workout" element={<WorkoutTemplates />} />
         <Route path="/addworkout" element={<AddWorkout />} />
         <Route path="/foodbuilder" element={<FoodBuilder />} />
-        <Route path="/diet" element={<MockDietDashboard />} />
+        <Route
+          path="/diet"
+          element={
+            <PrivateRoute>
+              <DietDashboard />
+            </PrivateRoute>
+          }
+        />
 
         {/* Onboarding route */}
         <Route

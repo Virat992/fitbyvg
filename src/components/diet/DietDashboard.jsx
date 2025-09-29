@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { FaUtensils, FaFire, FaHourglassHalf } from "react-icons/fa";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { getAuth } from "firebase/auth";
 import { FaSlidersH } from "react-icons/fa";
@@ -68,24 +68,18 @@ export default function DietDashboard() {
 
   // ---------- Fetch user ----------
   useEffect(() => {
-    const fetchUser = async () => {
+    const unsubscribe = getAuth().onAuthStateChanged(async (currentUser) => {
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
       try {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setLoading(false);
-          return;
-        }
-
         const docRef = doc(db, "users", currentUser.email);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setUser(data);
-          // Load saved meals
+          setUser({ ...data, email: currentUser.email }); // store email for save
           setMeals(data.meals || []);
-
           setEditInfo({
             age: data.onboarding?.physicalInfo?.age || 25,
             height: data.onboarding?.physicalInfo?.height || 170,
@@ -94,17 +88,16 @@ export default function DietDashboard() {
             physicalActivity:
               data.onboarding?.physicalInfo?.physicalActivity || "moderate",
           });
-
           setSelectedGoal(data.onboarding?.goals?.[0]?.id || "");
         }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    fetchUser();
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -491,11 +484,13 @@ export default function DietDashboard() {
               {expandedMeals[idx] && (
                 <div className="mt-2 text-gray-500 text-sm space-y-1">
                   {meal.items.map((item, i) => (
-                    <div key={i} className="flex justify-between">
-                      <span>
+                    <div key={i} className="flex justify-between items-center">
+                      <span className="truncate max-w-[70%]">
                         {item.quantity} × {item.name}
                       </span>
-                      <span>{item.calories} kcal</span>
+                      <span className="ml-2 flex-shrink-0">
+                        {item.calories} kcal
+                      </span>
                     </div>
                   ))}
 
@@ -706,33 +701,106 @@ export default function DietDashboard() {
 
             {/* Scrollable Inputs */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {["protein", "carbs", "fat"].map((macro) => (
-                <div key={macro}>
-                  <label className="block font-bold text-gray-600 mb-1 capitalize">
-                    {macro} (grams)
-                  </label>
-                  <input
-                    type="number"
-                    value={tempMacros[macro]}
-                    onChange={(e) => {
-                      const val = Number(e.target.value) || 0;
-                      const newMacros = { ...tempMacros, [macro]: val };
+              {["protein", "carbs", "fat"].map((macro) => {
+                const consumed = consumedMacros[macro];
+                const target = macros[macro];
+                const isSurplus = consumed > target;
 
-                      // Calculate total calories
-                      const totalKcal =
-                        newMacros.protein * 4 +
-                        newMacros.carbs * 4 +
-                        newMacros.fat * 9;
+                const chartData = isSurplus
+                  ? [target, consumed - target] // Target vs Surplus
+                  : [consumed, target - consumed]; // Consumed vs Remaining
 
-                      if (totalKcal <= dailyLimit) setTempMacros(newMacros);
-                    }}
-                    className="w-full p-2 border rounded-lg"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Current: {macros[macro]}g
-                  </p>
-                </div>
-              ))}
+                const chartColors =
+                  macro === "protein"
+                    ? isSurplus
+                      ? ["#34D399", "#DC2626"] // green / red
+                      : ["#34D399", "#D1FAE5"] // green / light green
+                    : macro === "carbs"
+                    ? isSurplus
+                      ? ["#3B82F6", "#DC2626"] // blue / red
+                      : ["#3B82F6", "#BFDBFE"] // blue / light blue
+                    : isSurplus
+                    ? ["#FACC15", "#DC2626"] // yellow / red
+                    : ["#FACC15", "#FEF3C7"]; // yellow / light yellow
+
+                const [activeSegment, setActiveSegment] = useState(null);
+
+                return (
+                  <div key={macro} className="relative w-20 h-20 flex-shrink-0">
+                    <Doughnut
+                      data={{
+                        labels: isSurplus
+                          ? ["Target", "Surplus"]
+                          : ["Surplus", "Remaining"],
+                        datasets: [
+                          {
+                            data: chartData,
+                            backgroundColor: chartColors,
+                            borderWidth: 0,
+                          },
+                        ],
+                      }}
+                      options={{
+                        cutout: "70%",
+                        plugins: {
+                          legend: { display: false },
+                          tooltip: { enabled: false },
+                        },
+                        onHover: (event, chartElements) => {
+                          if (chartElements.length > 0) {
+                            setActiveSegment(chartElements[0].index);
+                          } else {
+                            setActiveSegment(null);
+                          }
+                        },
+                      }}
+                      className="w-full h-full"
+                    />
+
+                    {/* Center text */}
+                    <div className="absolute inset-0 grid place-items-center text-center pointer-events-none">
+                      <div className="text-xs mt-7 font-bold text-white">
+                        {activeSegment === 0
+                          ? chartData[0]
+                          : activeSegment === 1
+                          ? chartData[1]
+                          : isSurplus
+                          ? chartData[1]
+                          : target - consumed}
+                        g
+                      </div>
+                      <div className="text-[8px] text-white mb-10">
+                        {activeSegment === 0
+                          ? chartData[0]
+                          : activeSegment === 1
+                          ? chartData[1]
+                          : isSurplus
+                          ? chartData[1]
+                          : target - consumed}
+                        g
+                      </div>
+                      <div className="text-[8px] text-white mb-10">
+                        {activeSegment === 0
+                          ? isSurplus
+                            ? "Target"
+                            : "Consumed"
+                          : activeSegment === 1
+                          ? isSurplus
+                            ? "Surplus"
+                            : "Remaining"
+                          : isSurplus
+                          ? "Surplus"
+                          : "Remaining"}
+                      </div>
+                    </div>
+
+                    {/* Macro name below */}
+                    <div className="absolute bottom-[-1.25rem] w-full text-center text-white text-[10px]">
+                      {macro.charAt(0).toUpperCase() + macro.slice(1)}
+                    </div>
+                  </div>
+                );
+              })}
 
               <p className="text-sm text-gray-700 mt-2">
                 Total calories from macros:{" "}

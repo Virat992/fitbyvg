@@ -13,12 +13,12 @@ import WorkoutInfo from "../components/dashboard/WorkoutInfo";
 import WeekSelector from "../components/dashboard/WeekSelector";
 import DaySelector from "../components/dashboard/DaySelector";
 import ExercisesList from "../components/dashboard/ExerciseList";
+import { useSearchParams } from "react-router-dom";
 
 import { bodybuilding, fatloss, rehab } from "../data/programs";
 import DietDashboard from "../components/diet/DietDashboard";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("workout");
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [started, setStarted] = useState(false);
   const [weeks, setWeeks] = useState([]);
@@ -36,6 +36,15 @@ export default function Dashboard() {
   const [savingNote, setSavingNote] = useState(false);
   const [currentProgram, setCurrentProgram] = useState(null);
   const [programStartDate, setProgramStartDate] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "workout";
+  const [activeTab, setActiveTab] = useState(
+    () => localStorage.getItem("dashboardActiveTab") || "workout"
+  );
+
+  useEffect(() => {
+    localStorage.setItem("dashboardActiveTab", activeTab);
+  }, [activeTab]);
 
   const auth = getAuth();
   const userId = auth.currentUser?.uid;
@@ -64,6 +73,11 @@ export default function Dashboard() {
       return format(new Date(), "yyyy-MM-dd");
     }
   };
+
+  // whenever activeTab changes
+  useEffect(() => {
+    setSearchParams({ tab: activeTab });
+  }, [activeTab, setSearchParams]);
 
   // ------------------- Fetch helpers -------------------
   const fetchCalendarDates = async () => {
