@@ -4,6 +4,7 @@ import { addDays, parseISO, format } from "date-fns";
 import { getAuth } from "firebase/auth";
 import { db } from "../services/firebase";
 import { collection, doc, getDocs, getDoc, setDoc } from "firebase/firestore";
+import DietCard from "../components/dashboard/DietCard";
 
 import Calendar from "../components/dashboard/Calender";
 import TopBar from "../components/dashboard/TopBar";
@@ -41,6 +42,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(
     () => localStorage.getItem("dashboardActiveTab") || "workout"
   );
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [dailySummary, setDailySummary] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("dashboardActiveTab", activeTab);
@@ -83,11 +86,22 @@ export default function Dashboard() {
   const fetchCalendarDates = async () => {
     if (!userId) return;
     try {
-      const snap = await getDocs(collection(db, "users", userId, "progress"));
+      const progSnap = await getDocs(
+        collection(db, "users", userId, "progress")
+      );
+      const mealSnap = await getDocs(collection(db, "users", userId, "meals"));
+
       const datesSet = new Set();
-      snap.docs.forEach((d) => {
-        if (d.data()?.date) datesSet.add(d.data().date);
+
+      // workouts (two ways: id prefix + stored date)
+      progSnap.forEach((doc) => {
+        datesSet.add(doc.id.split("_")[0]);
+        if (doc.data()?.date) datesSet.add(doc.data().date);
       });
+
+      // meals (doc.id is yyyy-mm-dd)
+      mealSnap.forEach((doc) => datesSet.add(doc.id));
+
       setCalendarDates(Array.from(datesSet).sort());
     } catch (err) {
       console.error("fetchCalendarDates error:", err);
@@ -206,6 +220,27 @@ export default function Dashboard() {
     }
   };
 
+  const fetchDaySummary = async (dateKey) => {
+    if (!userId) return;
+
+    try {
+      // --- Workout data ---
+      const progRef = doc(db, "users", userId, "progress", dateKey);
+      const progSnap = await getDoc(progRef);
+
+      // --- Meal data ---
+      const mealRef = doc(db, "users", userId, "meals", dateKey);
+      const mealSnap = await getDoc(mealRef);
+
+      setDailySummary({
+        workouts: progSnap.exists() ? progSnap.data() : null,
+        meals: mealSnap.exists() ? mealSnap.data() : null,
+      });
+    } catch (err) {
+      console.error("Failed to fetch summary:", err);
+    }
+  };
+
   const allCompleted = Object.values(completedExercises).every((v) => v);
 
   // ------------------- Initial effect -------------------
@@ -313,14 +348,11 @@ export default function Dashboard() {
   const handleCalendarDateSelect = async (dateStr) => {
     if (!userId) return;
     try {
-      const snap = await getDocs(collection(db, "users", userId, "progress"));
-      const matched = snap.docs.filter((d) => d.data()?.date === dateStr);
-
-      if (matched.length === 0) {
-        setCalendarDetails({ date: dateStr, items: [] });
-        setCalendarView(false);
-        return;
-      }
+      // 1. Fetch workouts for the date
+      const progSnap = await getDocs(
+        collection(db, "users", userId, "progress")
+      );
+      const matched = progSnap.docs.filter((d) => d.data()?.date === dateStr);
 
       const items = [];
       for (const docItem of matched) {
@@ -364,6 +396,7 @@ export default function Dashboard() {
               }));
 
         items.push({
+          type: "workout",
           workoutName: workout.name,
           workoutDb,
           week,
@@ -372,7 +405,30 @@ export default function Dashboard() {
           notes: progData.notes || [],
         });
       }
-      setCalendarDetails({ date: dateStr, items });
+
+      // 2. Fetch diet for the date
+      const mealRef = doc(db, "users", userId, "meals", dateStr);
+      const mealSnap = await getDoc(mealRef);
+
+      let meals = null;
+      if (mealSnap.exists()) {
+        const data = mealSnap.data();
+        meals = {
+          type: "diet",
+          calories: data.consumedCalories || 0,
+          macros: data.consumedMacros || { protein: 0, carbs: 0, fats: 0 },
+          limit: data.dailyLimit || {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fats: 0,
+          },
+          list: data.meals || [],
+        };
+      }
+
+      // 3. Save combined details
+      setCalendarDetails({ date: dateStr, workouts: items, meals });
       setCalendarView(false);
     } catch (err) {
       console.error("handleCalendarDateSelect error:", err);
@@ -411,6 +467,12 @@ export default function Dashboard() {
             {/* Calendar View */}
             {calendarView && (
               <Calendar
+                highlightedDates={calendarDates}
+                onDateClick={(date) => {
+                  const dateKey = format(date, "yyyy-MM-dd");
+                  setSelectedDate(dateKey);
+                  fetchDaySummary(dateKey);
+                }}
                 completedDays={calendarDates.reduce((acc, d) => {
                   acc[d] = true;
                   return acc;
@@ -418,6 +480,53 @@ export default function Dashboard() {
                 onClose={() => setCalendarView(false)}
                 onSelectDate={handleCalendarDateSelect}
               />
+            )}
+
+            {selectedDate && dailySummary && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-2xl shadow-lg p-6 w-96">
+                  <h2 className="text-xl font-bold mb-4">
+                    Summary for {selectedDate}
+                  </h2>
+
+                  {/* Workout Section */}
+                  {dailySummary.workouts ? (
+                    <div className="mb-4">
+                      <h3 className="font-semibold">Workout</h3>
+                      <p>{dailySummary.workouts.name || "Workout logged"}</p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No workout logged</p>
+                  )}
+
+                  {/* Meals Section */}
+                  {dailySummary.meals ? (
+                    <div>
+                      <h3 className="font-semibold">Meals</h3>
+                      <p>
+                        Calories: {dailySummary.meals.consumedCalories} /{" "}
+                        {dailySummary.meals.dailyLimit}
+                      </p>
+                      <ul className="list-disc list-inside">
+                        {dailySummary.meals.meals?.map((meal, idx) => (
+                          <li key={idx}>
+                            {meal.name} ({meal.unit}) - {meal.calories} cal
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No meals logged</p>
+                  )}
+
+                  <button
+                    onClick={() => setSelectedDate(null)}
+                    className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Calendar Details */}
@@ -435,28 +544,17 @@ export default function Dashboard() {
                   </button>
                 </div>
                 <div className="text-sm text-gray-600 font-medium mb-3">
-                  Workout details — {calendarDetails.date}
+                  Summary — {calendarDetails.date}
                 </div>
 
-                {calendarDetails.items.length === 0 ? (
-                  <p className="text-gray-500">
-                    No workouts done on this date.
-                  </p>
-                ) : (
-                  calendarDetails.items.map((item, idx) => (
+                {/* Workouts */}
+                {calendarDetails.workouts?.length > 0 ? (
+                  calendarDetails.workouts.map((item, idx) => (
                     <div
                       key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
                       className="mb-4"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{item.workoutName}</h4>
-                        <button
-                          onClick={() => openCalendarItem(item)}
-                          className="text-sm text-cyan-600 hover:underline"
-                        >
-                          Open workout
-                        </button>
-                      </div>
+                      <h4 className="font-semibold mb-1">{item.workoutName}</h4>
                       <p className="text-xs text-gray-500 mb-1">
                         Week: {item.week}, Day: {item.day}
                       </p>
@@ -470,23 +568,44 @@ export default function Dashboard() {
                           </li>
                         ))}
                       </ul>
-                      <div className="bg-gray-50 border rounded-lg p-3 text-sm text-gray-700 mt-2">
-                        <strong>Notes</strong>
-                        {item.notes.length === 0 ? (
-                          <p className="text-gray-500 mt-1">No notes.</p>
-                        ) : (
-                          item.notes.map((n, i) => (
-                            <p key={i} className="mt-1">
-                              {n.note}{" "}
-                              <span className="text-xs text-gray-400">
-                                ({new Date(n.timestamp).toLocaleString()})
-                              </span>
-                            </p>
-                          ))
-                        )}
-                      </div>
                     </div>
                   ))
+                ) : (
+                  <p className="text-gray-500">No workouts logged.</p>
+                )}
+
+                {/* Diet */}
+                {calendarDetails.meals ? (
+                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-semibold mb-2">🍽 Meals</h4>
+                    <p className="text-sm text-gray-600">
+                      Calories: {calendarDetails.meals.calories} /{" "}
+                      {calendarDetails.meals.limit.calories}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Protein: {calendarDetails.meals.macros.protein} /{" "}
+                      {calendarDetails.meals.limit.protein} g
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Carbs: {calendarDetails.meals.macros.carbs} /{" "}
+                      {calendarDetails.meals.limit.carbs} g
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Fats: {calendarDetails.meals.macros.fats} /{" "}
+                      {calendarDetails.meals.limit.fats} g
+                    </p>
+
+                    <ul className="list-disc list-inside text-sm mt-2">
+                      {calendarDetails.meals.list.map((m, i) => (
+                        <li key={i}>
+                          {m.name} - {m.calories} cal ({m.protein}P/{m.carbs}C/
+                          {m.fats}F)
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 mt-4">No meals logged.</p>
                 )}
               </div>
             )}
