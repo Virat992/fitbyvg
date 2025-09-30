@@ -100,7 +100,9 @@ export default function Dashboard() {
       });
 
       // meals (doc.id is yyyy-mm-dd)
-      mealSnap.forEach((doc) => datesSet.add(doc.id));
+      mealSnap.forEach((doc) => {
+        datesSet.add(doc.id); // doc.id is yyyy-MM-dd
+      });
 
       setCalendarDates(Array.from(datesSet).sort());
     } catch (err) {
@@ -348,14 +350,17 @@ export default function Dashboard() {
   const handleCalendarDateSelect = async (dateStr) => {
     if (!userId) return;
     try {
-      // 1. Fetch workouts for the date
+      const items = [];
+
+      // --- 1. Fetch workouts for the date ---
       const progSnap = await getDocs(
         collection(db, "users", userId, "progress")
       );
-      const matched = progSnap.docs.filter((d) => d.data()?.date === dateStr);
+      const matchedWorkouts = progSnap.docs.filter(
+        (d) => d.data()?.date === dateStr
+      );
 
-      const items = [];
-      for (const docItem of matched) {
+      for (const docItem of matchedWorkouts) {
         const progressId = docItem.id;
         const [workoutDb, week, day] = progressId.split("_");
         const progData = docItem.data();
@@ -406,9 +411,15 @@ export default function Dashboard() {
         });
       }
 
-      // 2. Fetch diet for the date
-      const mealRef = doc(db, "users", userId, "meals", dateStr);
+      // --- 2. Fetch meals for the date ---
+      const userKey = auth.currentUser?.email;
+      const mealRef = doc(db, "users", userKey, "meals", dateStr);
       const mealSnap = await getDoc(mealRef);
+      console.log("mealSnap exists?", mealSnap.exists());
+      if (mealSnap.exists()) {
+        const data = mealSnap.data();
+        console.log("meal data:", data);
+      }
 
       let meals = null;
       if (mealSnap.exists()) {
@@ -417,19 +428,14 @@ export default function Dashboard() {
           type: "diet",
           calories: data.consumedCalories || 0,
           macros: data.consumedMacros || { protein: 0, carbs: 0, fats: 0 },
-          limit: data.dailyLimit || {
-            calories: 0,
-            protein: 0,
-            carbs: 0,
-            fats: 0,
-          },
+          dailyLimit: data.dailyLimit || 0,
           list: data.meals || [],
         };
       }
 
-      // 3. Save combined details
+      // --- 3. Save combined details ---
       setCalendarDetails({ date: dateStr, workouts: items, meals });
-      setCalendarView(false);
+      setCalendarView(false); // close calendar, open summary
     } catch (err) {
       console.error("handleCalendarDateSelect error:", err);
     }
@@ -461,313 +467,384 @@ export default function Dashboard() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pb-35">
-        {/* Workout Tab */}
-        {activeTab === "workout" && (
+        {calendarView && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
+            <Calendar
+              highlightedDates={calendarDates}
+              onDateClick={(date) => {
+                const dateKey = format(date, "yyyy-MM-dd");
+                setSelectedDate(dateKey);
+                fetchDaySummary(dateKey);
+              }}
+              completedDays={calendarDates.reduce((acc, d) => {
+                acc[d] = true;
+                return acc;
+              }, {})}
+              onClose={() => setCalendarView(false)}
+              onSelectDate={handleCalendarDateSelect}
+            />
+          </div>
+        )}
+
+        {!calendarView && (
           <>
-            {/* Calendar View */}
-            {calendarView && (
-              <Calendar
-                highlightedDates={calendarDates}
-                onDateClick={(date) => {
-                  const dateKey = format(date, "yyyy-MM-dd");
-                  setSelectedDate(dateKey);
-                  fetchDaySummary(dateKey);
-                }}
-                completedDays={calendarDates.reduce((acc, d) => {
-                  acc[d] = true;
-                  return acc;
-                }, {})}
-                onClose={() => setCalendarView(false)}
-                onSelectDate={handleCalendarDateSelect}
-              />
-            )}
-
-            {selectedDate && dailySummary && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-                <div className="bg-white rounded-2xl shadow-lg p-6 w-96">
-                  <h2 className="text-xl font-bold mb-4">
-                    Summary for {selectedDate}
-                  </h2>
-
-                  {/* Workout Section */}
-                  {dailySummary.workouts ? (
-                    <div className="mb-4">
-                      <h3 className="font-semibold">Workout</h3>
-                      <p>{dailySummary.workouts.name || "Workout logged"}</p>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">No workout logged</p>
-                  )}
-
-                  {/* Meals Section */}
-                  {dailySummary.meals ? (
-                    <div>
-                      <h3 className="font-semibold">Meals</h3>
-                      <p>
-                        Calories: {dailySummary.meals.consumedCalories} /{" "}
-                        {dailySummary.meals.dailyLimit}
-                      </p>
-                      <ul className="list-disc list-inside">
-                        {dailySummary.meals.meals?.map((meal, idx) => (
-                          <li key={idx}>
-                            {meal.name} ({meal.unit}) - {meal.calories} cal
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500">No meals logged</p>
-                  )}
-
-                  <button
-                    onClick={() => setSelectedDate(null)}
-                    className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Calendar Details */}
-            {calendarDetails && (
-              <div className="bg-white rounded-2xl p-5 mt-5 shadow-lg">
-                <div className="flex justify-start mb-2">
-                  <button
-                    onClick={() => {
-                      setCalendarDetails(null);
-                      setCalendarView(true);
-                    }}
-                    className="text-cyan-600 font-medium"
-                  >
-                    Back to Calendar
-                  </button>
-                </div>
-                <div className="text-sm text-gray-600 font-medium mb-3">
-                  Summary — {calendarDetails.date}
-                </div>
-
-                {/* Workouts */}
-                {calendarDetails.workouts?.length > 0 ? (
-                  calendarDetails.workouts.map((item, idx) => (
-                    <div
-                      key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
-                      className="mb-4"
-                    >
-                      <h4 className="font-semibold mb-1">{item.workoutName}</h4>
-                      <p className="text-xs text-gray-500 mb-1">
-                        Week: {item.week}, Day: {item.day}
-                      </p>
-                      <ul className="list-disc list-inside text-sm text-gray-800">
-                        {item.exercises.map((ex) => (
-                          <li key={ex.id} className="mb-1">
-                            {ex.name}
-                            {ex.done ? (
-                              <span className="ml-2 text-green-600">✓</span>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-500">No workouts logged.</p>
-                )}
-
-                {/* Diet */}
-                {calendarDetails.meals ? (
-                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-                    <h4 className="font-semibold mb-2">🍽 Meals</h4>
-                    <p className="text-sm text-gray-600">
-                      Calories: {calendarDetails.meals.calories} /{" "}
-                      {calendarDetails.meals.limit.calories}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Protein: {calendarDetails.meals.macros.protein} /{" "}
-                      {calendarDetails.meals.limit.protein} g
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Carbs: {calendarDetails.meals.macros.carbs} /{" "}
-                      {calendarDetails.meals.limit.carbs} g
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Fats: {calendarDetails.meals.macros.fats} /{" "}
-                      {calendarDetails.meals.limit.fats} g
-                    </p>
-
-                    <ul className="list-disc list-inside text-sm mt-2">
-                      {calendarDetails.meals.list.map((m, i) => (
-                        <li key={i}>
-                          {m.name} - {m.calories} cal ({m.protein}P/{m.carbs}C/
-                          {m.fats}F)
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 mt-4">No meals logged.</p>
-                )}
-              </div>
-            )}
-
-            {/* Main Dashboard / Workouts */}
-            {!calendarView && !calendarDetails && (
+            {/* Workout Tab */}
+            {activeTab === "workout" && (
               <>
-                {/* Current Program Carousel */}
-                {currentProgram && !selectedWorkout && (
-                  <WorkoutCarousel
-                    title="🔥 Ongoing Workout"
-                    programs={[currentProgram]}
-                    cardHighlight
-                    onClickCard={(program) => {
-                      setSelectedWorkout(program);
-                      setSelectedWeek(null);
-                      setSelectedDay(null);
-                      fetchWeeks(program);
-                      setStarted(true);
-                    }}
-                  />
+                {selectedDate && dailySummary && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-2xl shadow-lg p-6 w-96">
+                      <h2 className="text-xl font-bold mb-4">
+                        Summary for {selectedDate}
+                      </h2>
+
+                      {/* Workout Section */}
+                      {dailySummary.workouts ? (
+                        <div className="mb-4">
+                          <h3 className="font-semibold">Workout</h3>
+                          <p>
+                            {dailySummary.workouts.name || "Workout logged"}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">No workout logged</p>
+                      )}
+
+                      {/* Meals Section */}
+                      {dailySummary.meals ? (
+                        <div>
+                          <h3 className="font-semibold">Meals</h3>
+                          <p>
+                            Calories: {dailySummary.meals.consumedCalories} /{" "}
+                            {dailySummary.meals.dailyLimit}
+                          </p>
+                          <ul className="list-disc list-inside">
+                            {dailySummary.meals.meals?.map((meal, idx) => (
+                              <li key={idx}>
+                                {meal.name} ({meal.unit}) - {meal.calories} cal
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <p className="text-gray-500">No meals logged</p>
+                      )}
+
+                      <button
+                        onClick={() => setSelectedDate(null)}
+                        className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                {/* Workout selection */}
-                {!selectedWorkout && (
+                {/* Calendar Details */}
+                {calendarDetails && (
+                  <div className="bg-white rounded-2xl p-5 mt-5 shadow-lg">
+                    <div className="flex justify-start mb-2">
+                      <button
+                        onClick={() => {
+                          setCalendarDetails(null);
+                          setCalendarView(true);
+                        }}
+                        className="text-cyan-600 font-medium"
+                      >
+                        Back to Calendar
+                      </button>
+                    </div>
+                    <div className="text-sm text-gray-600 font-medium mb-3">
+                      Summary — {calendarDetails.date}
+                    </div>
+
+                    {/* Workouts */}
+                    {calendarDetails.workouts?.length > 0 ? (
+                      calendarDetails.workouts.map((item, idx) => (
+                        <div
+                          key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
+                          className="mb-4"
+                        >
+                          <h4 className="font-semibold mb-1">
+                            {item.workoutName}
+                          </h4>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Week: {item.week}, Day: {item.day}
+                          </p>
+                          <ul className="list-disc list-inside text-sm text-gray-800">
+                            {item.exercises.map((ex) => (
+                              <li key={ex.id} className="mb-1">
+                                {ex.name}
+                                {ex.done ? (
+                                  <span className="ml-2 text-green-600">✓</span>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500">No workouts logged.</p>
+                    )}
+
+                    {/* Diet */}
+                    {calendarDetails.meals ? (
+                      <div className="mt-6 p-4 border rounded-lg bg-gray-50 space-y-4">
+                        <h4 className="font-semibold text-lg mb-2">🍽 Meals</h4>
+
+                        {/* Summary */}
+                        <div className="p-3 bg-white rounded-lg shadow-sm space-y-1">
+                          <p className="text-sm text-gray-700">
+                            Daily Calories:{" "}
+                            <span
+                              className={
+                                calendarDetails.meals.calories <=
+                                (calendarDetails.meals.dailyLimit || 0)
+                                  ? "text-green-600 font-semibold"
+                                  : "text-red-600 font-semibold"
+                              }
+                            >
+                              {calendarDetails.meals.calories} /{" "}
+                              {calendarDetails.meals.dailyLimit || 0} kcal
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {calendarDetails.meals.calories <=
+                            (calendarDetails.meals.dailyLimit || 0)
+                              ? `You have ${
+                                  (calendarDetails.meals.dailyLimit || 0) -
+                                  calendarDetails.meals.calories
+                                } kcal remaining`
+                              : `You exceeded by ${
+                                  calendarDetails.meals.calories -
+                                  (calendarDetails.meals.dailyLimit || 0)
+                                } kcal`}
+                          </p>
+
+                          <p className="text-sm text-gray-700">
+                            Protein: {calendarDetails.meals.macros.protein || 0}{" "}
+                            g
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            Carbs: {calendarDetails.meals.macros.carbs || 0} g
+                          </p>
+                          <p className="text-sm text-gray-700">
+                            Fats: {calendarDetails.meals.macros.fat || 0} g
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {calendarDetails.meals.calories <=
+                            (calendarDetails.meals.dailyLimit || 0)
+                              ? `You have ${
+                                  (calendarDetails.meals.dailyLimit || 0) -
+                                  calendarDetails.meals.calories
+                                } kcal remaining`
+                              : `You exceeded by ${
+                                  calendarDetails.meals.calories -
+                                  (calendarDetails.meals.dailyLimit || 0)
+                                } kcal`}
+                          </p>
+                        </div>
+
+                        {/* Meals */}
+                        {calendarDetails.meals.list.map((meal, i) => (
+                          <div
+                            key={i}
+                            className="p-3 bg-white rounded-lg shadow-sm space-y-1"
+                          >
+                            <h5 className="font-medium text-gray-800">
+                              Meal {i + 1} — {meal.calories} kcal
+                            </h5>
+
+                            {/* Items inside each meal */}
+                            {meal.items?.length > 0 ? (
+                              <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                                {meal.items.map((item, idx) => (
+                                  <li key={idx}>
+                                    {item.name} - {item.calories} cal (
+                                    {item.protein || 0}P/{item.carbs || 0}C/
+                                    {item.fat || 0}F) | {item.quantity} x{" "}
+                                    {item.unit}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-gray-500">
+                                No items logged
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 mt-4">No meals logged.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Main Dashboard / Workouts */}
+                {!calendarView && !calendarDetails && (
                   <>
-                    <WorkoutCarousel
-                      title="💪 Bodybuilding Workouts"
-                      programs={bodybuilding}
-                      onClickCard={(p) => setSelectedWorkout(p)}
-                    />
-                    <WorkoutCarousel
-                      title="🔥 Fat Loss Programs"
-                      programs={fatloss}
-                      onClickCard={(p) => setSelectedWorkout(p)}
-                    />
-                    <WorkoutCarousel
-                      title="🩺 Rehab Programs"
-                      programs={rehab}
-                      onClickCard={(p) => setSelectedWorkout(p)}
-                    />
+                    {/* Current Program Carousel */}
+                    {currentProgram && !selectedWorkout && (
+                      <WorkoutCarousel
+                        title="🔥 Ongoing Workout"
+                        programs={[currentProgram]}
+                        cardHighlight
+                        onClickCard={(program) => {
+                          setSelectedWorkout(program);
+                          setSelectedWeek(null);
+                          setSelectedDay(null);
+                          fetchWeeks(program);
+                          setStarted(true);
+                        }}
+                      />
+                    )}
+
+                    {/* Workout selection */}
+                    {!selectedWorkout && (
+                      <>
+                        <WorkoutCarousel
+                          title="💪 Bodybuilding Workouts"
+                          programs={bodybuilding}
+                          onClickCard={(p) => setSelectedWorkout(p)}
+                        />
+                        <WorkoutCarousel
+                          title="🔥 Fat Loss Programs"
+                          programs={fatloss}
+                          onClickCard={(p) => setSelectedWorkout(p)}
+                        />
+                        <WorkoutCarousel
+                          title="🩺 Rehab Programs"
+                          programs={rehab}
+                          onClickCard={(p) => setSelectedWorkout(p)}
+                        />
+                      </>
+                    )}
+
+                    {/* Workout Info / Start */}
+                    {selectedWorkout && !started && (
+                      <WorkoutInfo
+                        workout={selectedWorkout}
+                        onBack={() => setSelectedWorkout(null)}
+                        onStart={async () => {
+                          if (!userId) return;
+                          try {
+                            const today = format(new Date(), "yyyy-MM-dd");
+                            await setDoc(
+                              doc(db, "users", userId),
+                              {
+                                currentProgram: selectedWorkout.dbName,
+                                programStartDate: programStartDate || today,
+                              },
+                              { merge: true }
+                            );
+                            setCurrentProgram(selectedWorkout);
+                            setProgramStartDate(programStartDate || today);
+                            await fetchWeeks(selectedWorkout);
+                            setStarted(true);
+                          } catch (err) {
+                            console.error("onStart error:", err);
+                          }
+                        }}
+                      />
+                    )}
+
+                    {/* Week Selector */}
+                    {selectedWorkout && started && !selectedWeek && (
+                      <WeekSelector
+                        weeks={weeks}
+                        getWeekStatus={getWeekStatus}
+                        onSelectWeek={(w) =>
+                          fetchDays(selectedWorkout, w).then(() =>
+                            setSelectedWeek(w)
+                          )
+                        }
+                        onBack={() => {
+                          setStarted(false);
+                          setSelectedWeek(null);
+                        }}
+                        isProgramStarted={
+                          !!(
+                            currentProgram &&
+                            selectedWorkout &&
+                            currentProgram.dbName === selectedWorkout.dbName
+                          )
+                        }
+                        goToDashboard={() => {
+                          setSelectedWorkout(null);
+                          setSelectedWeek(null);
+                          setSelectedDay(null);
+                          setStarted(false);
+                        }}
+                      />
+                    )}
+
+                    {/* Day Selector */}
+                    {selectedWeek && !selectedDay && (
+                      <DaySelector
+                        days={days}
+                        completedDays={completedDays}
+                        selectedWorkout={selectedWorkout}
+                        selectedWeek={selectedWeek}
+                        onSelectDay={(d) =>
+                          fetchExercises(selectedWorkout, selectedWeek, d).then(
+                            () => setSelectedDay(d)
+                          )
+                        }
+                        onBack={() => setSelectedWeek(null)}
+                      />
+                    )}
+
+                    {/* Exercises List */}
+                    {selectedDay && (
+                      <ExercisesList
+                        exercises={exercises}
+                        completedExercises={completedExercises}
+                        handleToggleExercise={handleToggleExercise}
+                        handleToggleAll={handleToggleAll}
+                        allCompleted={allCompleted}
+                        noteInput={noteInput}
+                        setNoteInput={setNoteInput}
+                        notesHistory={notesHistory}
+                        setNotesHistory={setNotesHistory}
+                        savingNote={savingNote}
+                        setSavingNote={setSavingNote}
+                        handleSaveProgress={handleSaveProgress}
+                        selectedWorkout={selectedWorkout}
+                        selectedWeek={selectedWeek}
+                        selectedDay={selectedDay}
+                        completedDays={completedDays}
+                        userId={userId}
+                        db={db}
+                        setSelectedDay={setSelectedDay}
+                        setSelectedWeek={setSelectedWeek}
+                        setStarted={setStarted}
+                        setSelectedWorkout={setSelectedWorkout}
+                      />
+                    )}
                   </>
-                )}
-
-                {/* Workout Info / Start */}
-                {selectedWorkout && !started && (
-                  <WorkoutInfo
-                    workout={selectedWorkout}
-                    onBack={() => setSelectedWorkout(null)}
-                    onStart={async () => {
-                      if (!userId) return;
-                      try {
-                        const today = format(new Date(), "yyyy-MM-dd");
-                        await setDoc(
-                          doc(db, "users", userId),
-                          {
-                            currentProgram: selectedWorkout.dbName,
-                            programStartDate: programStartDate || today,
-                          },
-                          { merge: true }
-                        );
-                        setCurrentProgram(selectedWorkout);
-                        setProgramStartDate(programStartDate || today);
-                        await fetchWeeks(selectedWorkout);
-                        setStarted(true);
-                      } catch (err) {
-                        console.error("onStart error:", err);
-                      }
-                    }}
-                  />
-                )}
-
-                {/* Week Selector */}
-                {selectedWorkout && started && !selectedWeek && (
-                  <WeekSelector
-                    weeks={weeks}
-                    getWeekStatus={getWeekStatus}
-                    onSelectWeek={(w) =>
-                      fetchDays(selectedWorkout, w).then(() =>
-                        setSelectedWeek(w)
-                      )
-                    }
-                    onBack={() => {
-                      setStarted(false);
-                      setSelectedWeek(null);
-                    }}
-                    isProgramStarted={
-                      !!(
-                        currentProgram &&
-                        selectedWorkout &&
-                        currentProgram.dbName === selectedWorkout.dbName
-                      )
-                    }
-                    goToDashboard={() => {
-                      setSelectedWorkout(null);
-                      setSelectedWeek(null);
-                      setSelectedDay(null);
-                      setStarted(false);
-                    }}
-                  />
-                )}
-
-                {/* Day Selector */}
-                {selectedWeek && !selectedDay && (
-                  <DaySelector
-                    days={days}
-                    completedDays={completedDays}
-                    selectedWorkout={selectedWorkout}
-                    selectedWeek={selectedWeek}
-                    onSelectDay={(d) =>
-                      fetchExercises(selectedWorkout, selectedWeek, d).then(
-                        () => setSelectedDay(d)
-                      )
-                    }
-                    onBack={() => setSelectedWeek(null)}
-                  />
-                )}
-
-                {/* Exercises List */}
-                {selectedDay && (
-                  <ExercisesList
-                    exercises={exercises}
-                    completedExercises={completedExercises}
-                    handleToggleExercise={handleToggleExercise}
-                    handleToggleAll={handleToggleAll}
-                    allCompleted={allCompleted}
-                    noteInput={noteInput}
-                    setNoteInput={setNoteInput}
-                    notesHistory={notesHistory}
-                    setNotesHistory={setNotesHistory}
-                    savingNote={savingNote}
-                    setSavingNote={setSavingNote}
-                    handleSaveProgress={handleSaveProgress}
-                    selectedWorkout={selectedWorkout}
-                    selectedWeek={selectedWeek}
-                    selectedDay={selectedDay}
-                    completedDays={completedDays}
-                    userId={userId}
-                    db={db}
-                    setSelectedDay={setSelectedDay}
-                    setSelectedWeek={setSelectedWeek}
-                    setStarted={setStarted}
-                    setSelectedWorkout={setSelectedWorkout}
-                  />
                 )}
               </>
             )}
+
+            {/* Diet Tab */}
+            {activeTab === "diet" && userId && (
+              <DietDashboard userId={userId} />
+            )}
+
+            {/* Other Tabs */}
+            {activeTab === "progress" && (
+              <div className="text-center text-gray-500 mt-10">
+                Progress Tab
+              </div>
+            )}
+            {activeTab === "explore" && (
+              <div className="text-center text-gray-500 mt-10">Explore Tab</div>
+            )}
+            {activeTab === "chat" && (
+              <div className="text-center text-gray-500 mt-10">Chat Tab</div>
+            )}
           </>
-        )}
-
-        {/* Diet Tab */}
-        {activeTab === "diet" && userId && <DietDashboard userId={userId} />}
-
-        {/* Other Tabs */}
-        {activeTab === "progress" && (
-          <div className="text-center text-gray-500 mt-10">Progress Tab</div>
-        )}
-        {activeTab === "explore" && (
-          <div className="text-center text-gray-500 mt-10">Explore Tab</div>
-        )}
-        {activeTab === "chat" && (
-          <div className="text-center text-gray-500 mt-10">Chat Tab</div>
         )}
       </div>
 

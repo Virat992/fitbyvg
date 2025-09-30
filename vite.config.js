@@ -10,7 +10,7 @@ export default defineConfig({
     port: 5173, // optional, your dev server port
     strictPort: true, // optional, fail if port is busy
     allowedHosts: [
-      "a3a428f9cf1e.ngrok-free.app", // replace with your ngrok URL
+      "528c4811159d.ngrok-free.app", // replace with your ngrok URL
     ],
   },
 });

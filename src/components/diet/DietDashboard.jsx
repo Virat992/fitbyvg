@@ -45,6 +45,11 @@ export default function DietDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [initialLoad, setInitialLoad] = useState(true);
   const [mealsFetched, setMealsFetched] = useState(false);
+  const [limitMacros, setLimitMacros] = useState({
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+  });
 
   const mockFoodList = [
     { id: "1", name: "Chicken Breast", caloriesPer100g: 165 },
@@ -114,8 +119,12 @@ export default function DietDashboard() {
         if (mealSnap.exists()) {
           const data = mealSnap.data();
           setMeals(data.meals || []);
+          setDailyLimit(data.dailyLimit || 0);
+          setLimitMacros(data.limitMacros || { protein: 0, carbs: 0, fat: 0 });
         } else {
           setMeals([]);
+          setDailyLimit(0);
+          setLimitMacros({ protein: 0, carbs: 0, fat: 0 });
         }
         setMealsFetched(true);
       } catch (err) {
@@ -293,13 +302,17 @@ export default function DietDashboard() {
       const dateKey = selectedDate.toISOString().split("T")[0];
       const mealRef = doc(db, "users", user.email, "meals", dateKey);
 
-      await setDoc(mealRef, {
-        date: dateKey,
-        meals: updatedMeals,
-        consumedCalories: updatedCalories,
-        consumedMacros: updatedMacros,
-        dailyLimit,
-      });
+      await setDoc(
+        mealRef,
+        {
+          date: dateKey,
+          meals: updatedMeals,
+          consumedCalories: updatedCalories,
+          consumedMacros: updatedMacros,
+          dailyLimit,
+        },
+        { merge: true }
+      );
 
       console.log("Meal deleted successfully!", updatedMeals);
     } catch (err) {
@@ -759,11 +772,39 @@ export default function DietDashboard() {
             {/* Sticky Footer Buttons */}
             <div className="p-4 border-t border-gray-200 flex justify-between flex-shrink-0">
               <button
-                onClick={() => setAdjustingInfo(false)}
+                onClick={async () => {
+                  if (!user || !selectedDate) return;
+
+                  const dateKey = selectedDate.toISOString().split("T")[0];
+                  const mealRef = doc(
+                    db,
+                    "users",
+                    user.email,
+                    "meals",
+                    dateKey
+                  );
+
+                  try {
+                    // Save current dailyLimit and macros for this date
+                    await setDoc(
+                      mealRef,
+                      {
+                        dailyLimit, // calories limit
+                        limitMacros: { ...macros }, // macros limit (protein/carbs/fat)
+                        updatedAt: new Date(),
+                      },
+                      { merge: true }
+                    );
+                    setAdjustingInfo(false);
+                  } catch (err) {
+                    console.error("Failed to save daily limit & macros:", err);
+                  }
+                }}
                 className="bg-green-500 text-white px-4 py-2 rounded-lg"
               >
                 Save
               </button>
+
               <button
                 onClick={() => setAdjustingInfo(false)}
                 className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
@@ -834,14 +875,39 @@ export default function DietDashboard() {
             {/* Footer */}
             <div className="p-4 border-t border-gray-200 flex justify-between flex-shrink-0">
               <button
-                onClick={() => {
+                onClick={async () => {
                   setMacros({ ...tempMacros });
                   setAdjustingMacros(false);
+
+                  if (!user || !selectedDate) return;
+
+                  const dateKey = selectedDate.toISOString().split("T")[0];
+                  const mealRef = doc(
+                    db,
+                    "users",
+                    user.email,
+                    "meals",
+                    dateKey
+                  );
+
+                  try {
+                    await setDoc(
+                      mealRef,
+                      {
+                        limitMacros: { ...tempMacros },
+                        updatedAt: new Date(),
+                      },
+                      { merge: true }
+                    );
+                  } catch (err) {
+                    console.error("Failed to save macros limit:", err);
+                  }
                 }}
                 className="bg-green-500 text-white px-4 py-2 rounded-lg"
               >
                 Save
               </button>
+
               <button
                 onClick={() => {
                   setTempMacros({ ...macros });
