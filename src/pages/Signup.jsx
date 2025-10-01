@@ -72,6 +72,7 @@ export default function Signup() {
         onboardingStep: 0,
         forms: {},
         formsCompleted: false,
+        role: "user",
       });
       navigate("/onboarding", { replace: true });
     } catch (err) {

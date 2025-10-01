@@ -50,6 +50,7 @@ export default function DietDashboard() {
     carbs: 0,
     fat: 0,
   });
+  const [firstName, setFirstName] = useState("");
 
   const mockFoodList = [
     { id: "1", name: "Chicken Breast", caloriesPer100g: 165 },
@@ -145,10 +146,31 @@ export default function DietDashboard() {
       try {
         const docRef = doc(db, "users", currentUser.email);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setUser({ ...data, email: currentUser.email }); // store email for save
+
+          setUser({ ...data, email: currentUser.email }); // keep email for saving
+
+          // ✅ load global calorie goal & macros if available
+          if (data.dailyLimit) {
+            setDailyLimit(data.dailyLimit);
+          } else {
+            // fallback: calculate from physical info if no saved value
+            const maintenance = calculateMaintenance(
+              data.onboarding?.physicalInfo
+            );
+            setDailyLimit(maintenance);
+          }
+
+          if (data.limitMacros) {
+            setMacros(data.limitMacros);
+          }
+
+          // meals are still daily, safe to keep here if you’re storing them
           setMeals(data.meals || []);
+
+          // onboarding info
           setEditInfo({
             age: data.onboarding?.physicalInfo?.age || 25,
             height: data.onboarding?.physicalInfo?.height || 170,
@@ -157,7 +179,12 @@ export default function DietDashboard() {
             physicalActivity:
               data.onboarding?.physicalInfo?.physicalActivity || "moderate",
           });
+
+          // goals
           setSelectedGoal(data.onboarding?.goals?.[0]?.id || "");
+
+          // ✅ grab firstName from onboarding
+          setFirstName(data.onboarding?.firstName || "");
         }
       } catch (err) {
         console.error(err);
@@ -787,10 +814,10 @@ export default function DietDashboard() {
                   try {
                     // Save current dailyLimit and macros for this date
                     await setDoc(
-                      mealRef,
+                      doc(db, "users", user.email),
                       {
-                        dailyLimit, // calories limit
-                        limitMacros: { ...macros }, // macros limit (protein/carbs/fat)
+                        dailyLimit,
+                        limitMacros: { ...macros },
                         updatedAt: new Date(),
                       },
                       { merge: true }

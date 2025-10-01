@@ -4,7 +4,8 @@ import { addDays, parseISO, format } from "date-fns";
 import { getAuth } from "firebase/auth";
 import { db } from "../services/firebase";
 import { collection, doc, getDocs, getDoc, setDoc } from "firebase/firestore";
-import DietCard from "../components/dashboard/DietCard";
+import ChatWindow from "../components/dashboard/ChatWindow";
+import AdminInbox from "../admin/AdminInbox";
 
 import Calendar from "../components/dashboard/Calender";
 import TopBar from "../components/dashboard/TopBar";
@@ -44,6 +45,7 @@ export default function Dashboard() {
   );
   const [selectedDate, setSelectedDate] = useState(null);
   const [dailySummary, setDailySummary] = useState(null);
+  const [userName, setFirstName] = useState("");
 
   useEffect(() => {
     localStorage.setItem("dashboardActiveTab", activeTab);
@@ -254,6 +256,8 @@ export default function Dashboard() {
         const snap = await getDoc(userRef);
         if (snap.exists()) {
           const data = snap.data();
+          // Save firstName from onboarding
+          setFirstName(data.onboarding?.firstName || "");
           if (data.currentProgram) {
             const program = allPrograms.find(
               (p) => p.dbName === data.currentProgram
@@ -274,6 +278,8 @@ export default function Dashboard() {
     fetchCurrentProgram();
     fetchCalendarDates();
   }, [userId]);
+
+  // ----------------- fetch Username --------------
 
   // ------------------- Handlers -------------------
   const handleToggleExercise = (id) => {
@@ -464,6 +470,10 @@ export default function Dashboard() {
           onCalendar={() => setCalendarView(true)}
           onNotifications={() => {}}
         />
+        <div className="bg-white text-center py-2 text-gray-700 font-semibold shadow-sm">
+          Welcome,{" "}
+          {userName || auth.currentUser?.displayName || auth.currentUser?.email}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pb-35">
@@ -842,7 +852,13 @@ export default function Dashboard() {
               <div className="text-center text-gray-500 mt-10">Explore Tab</div>
             )}
             {activeTab === "chat" && (
-              <div className="text-center text-gray-500 mt-10">Chat Tab</div>
+              <div className="h-full">
+                {auth.currentUser?.email === "coach@gmail.com" ? (
+                  <AdminInbox />
+                ) : (
+                  <ChatWindow userId={userId} />
+                )}
+              </div>
             )}
           </>
         )}

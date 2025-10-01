@@ -11,7 +11,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
 import AddWorkout from "./admin/AddWorkout.jsx";
 import FoodBuilder from "./admin/FoodBuilder.jsx";
-import MockDietDashboard from "./components/diet/MockDietDashboard.jsx";
+
 import DietDashboard from "./components/diet/DietDashboard.jsx";
 
 function App() {
@@ -25,6 +25,7 @@ function App() {
         <Route path="/workout" element={<WorkoutTemplates />} />
         <Route path="/addworkout" element={<AddWorkout />} />
         <Route path="/foodbuilder" element={<FoodBuilder />} />
+
         <Route
           path="/diet"
           element={
