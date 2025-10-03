@@ -14,7 +14,7 @@ export default function PrivateRoute({ children }) {
     const checkOnboardingStatus = async () => {
       if (user?.email) {
         try {
-          const userDoc = await getDoc(doc(db, "users", user.email));
+          const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
             setOnboardingStatus(data.onboardingCompleted ?? false);

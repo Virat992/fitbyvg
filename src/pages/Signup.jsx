@@ -33,6 +33,7 @@ export default function Signup() {
     e.preventDefault();
     setErrors({ email: "", password: "", rePassword: "", terms: "" });
 
+    // --- Validation (same as before) ---
     if (!email)
       return setErrors((prev) => ({ ...prev, email: "Email is required" }));
     if (!validateEmail(email))
@@ -65,15 +66,29 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", email), {
+
+      // --- 1. Create user with email/password ---
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // --- 2. Create Firestore doc using UID as ID ---
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
         createdAt: new Date(),
         onboardingCompleted: false,
         onboardingStep: 0,
         forms: {},
         formsCompleted: false,
         role: "user",
+        currentProgram: null,
+        programStartDate: null,
       });
+
+      // --- 3. Navigate to onboarding ---
       navigate("/onboarding", { replace: true });
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {

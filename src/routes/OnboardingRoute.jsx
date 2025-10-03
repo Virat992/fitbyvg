@@ -1,4 +1,3 @@
-// src/routes/OnboardingRoute.jsx
 import { auth, db } from "../services/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Navigate } from "react-router-dom";
@@ -8,35 +7,30 @@ import { useState, useEffect } from "react";
 export default function OnboardingRoute({ children }) {
   const [user, loading] = useAuthState(auth);
   const [onboardingStatus, setOnboardingStatus] = useState(null);
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (user?.email) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.email));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            setOnboardingStatus(data.onboardingCompleted ?? false);
-          } else {
-            setOnboardingStatus(false);
-          }
-        } catch (err) {
-          console.error("Error checking onboarding status:", err);
+      if (!user) return;
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setOnboardingStatus(data.onboardingCompleted ?? false);
+        } else {
           setOnboardingStatus(false);
         }
+      } catch (err) {
+        console.error("Error checking onboarding status:", err);
+        setOnboardingStatus(false);
       }
-      setCheckingOnboarding(false);
     };
 
-    if (user) {
-      checkOnboardingStatus();
-    } else {
-      setCheckingOnboarding(false);
-    }
+    checkOnboardingStatus();
   }, [user]);
 
-  if (loading || checkingOnboarding || onboardingStatus === null) {
+  // ✅ Show loading until auth and onboarding status are ready
+  if (loading || onboardingStatus === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-gray-600 text-center">Loading...</p>
@@ -44,9 +38,9 @@ export default function OnboardingRoute({ children }) {
     );
   }
 
-  if (!user) return <Navigate to="/" />;
+  if (!user) return <Navigate to="/" replace />;
 
-  if (onboardingStatus === true) return <Navigate to="/dashboard" />;
+  if (onboardingStatus === true) return <Navigate to="/dashboard" replace />;
 
   return children;
 }

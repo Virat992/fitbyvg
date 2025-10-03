@@ -33,22 +33,41 @@ export default function Login() {
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
 
-      const userDoc = await getDoc(doc(db, "users", email));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
+      // ✅ Sign in user
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user; // ✅ get current signed-in user
+
+      // ✅ Fetch user doc using UID
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+
+        // ✅ Prevent redirect loop by checking current path
         if (userData.onboardingCompleted) {
-          navigate("/dashboard", { replace: true }); // prevents /login in history
+          if (window.location.pathname !== "/dashboard") {
+            navigate("/dashboard", { replace: true });
+          }
         } else {
-          const step = userData.onboardingStep ?? 0;
-          navigate("/onboarding", {
-            state: { startStep: step },
-            replace: true,
-          });
+          if (window.location.pathname !== "/onboarding") {
+            const step = userData.onboardingStep ?? 0;
+            navigate("/onboarding", {
+              state: { startStep: step },
+              replace: true,
+            });
+          }
         }
       } else {
-        navigate("/onboarding", { state: { startStep: 0 }, replace: true });
+        // New user → onboarding
+        if (window.location.pathname !== "/onboarding") {
+          navigate("/onboarding", { state: { startStep: 0 }, replace: true });
+        }
       }
     } catch (error) {
       switch (error.code) {
@@ -82,7 +101,6 @@ export default function Login() {
             bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-400 cursor-pointer"
           onClick={() => navigate("/")}
         >
-          {/* Optional design element or logo */}
           <p
             className="text-[40px] -mt-15 font-bold text-white"
             style={{ fontFamily: "'Roboto', cursive" }}
@@ -128,7 +146,7 @@ export default function Login() {
             <FormInput
               id="password"
               label="Password"
-              type={passwordVisible ? "text" : "password"} // toggle type
+              type={passwordVisible ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"

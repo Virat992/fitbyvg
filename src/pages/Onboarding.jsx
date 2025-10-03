@@ -1,11 +1,10 @@
 // src/pages/Onboarding.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { setDoc, doc } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { setDoc, doc, getDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../services/firebase";
 
-// Import onboarding step components
 import OnboardingProgress from "../components/onboarding/OnboardingProgress";
 import Welcome from "../components/onboarding/Welcome";
 import Goals from "../components/onboarding/Goals";
@@ -14,16 +13,13 @@ import HealthHabits from "../components/onboarding/HealthHabits";
 import PhysicalInfo from "../components/onboarding/PhysicalInfo";
 import WeightLossBarriers from "../components/onboarding/WeightLossBarriers";
 
-// Forms
 import PARQForm from "../components/forms/PARQForm";
 import ACSMForm from "../components/forms/ACSMForm";
 import ConsentForm from "../components/forms/ConsentForm";
 import PreferencesForm from "../components/forms/PreferencesForm";
 
-// Workout helper
 import { fetchWorkoutByGoalAndExperience } from "../services/workouts";
 
-// Steps enum
 const STEPS = {
   WELCOME: 0,
   GOALS: 1,
@@ -53,8 +49,43 @@ export default function Onboarding() {
     weightLossBarriers: [],
   });
 
-  const [user] = useAuthState(auth);
+  const [user, loadingUser] = useAuthState(auth);
+  const [hasRedirected, setHasRedirected] = useState(false); // ✅ prevent repeated redirect
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (loadingUser || hasRedirected) return; // wait for auth OR skip if already redirected
+    if (!user) return; // unauthenticated → do nothing
+
+    const checkUser = async () => {
+      const userDocSnap = await getDoc(doc(db, "users", user.uid));
+
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+
+        if (userData.onboardingCompleted) {
+          if (window.location.pathname !== "/dashboard") {
+            setHasRedirected(true);
+            navigate("/dashboard", { replace: true });
+          }
+        } else {
+          const startStep =
+            location.state?.startStep ??
+            userData.onboardingStep ??
+            STEPS.WELCOME;
+          setCurrentStep(startStep);
+        }
+      } else {
+        setCurrentStep(STEPS.WELCOME);
+      }
+    };
+
+    checkUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loadingUser, hasRedirected]);
+
+  if (loadingUser) return null; // wait for auth
 
   const handleNext = (data = {}) => {
     const updatedData = { ...onboardingData, ...data };
@@ -72,38 +103,31 @@ export default function Onboarding() {
     else navigate("/");
   };
 
-  // ✅ Updated: Complete onboarding and assign workout templates
   const handleComplete = async (data) => {
     if (!user) return;
 
     try {
-      // 1️⃣ Get first goal and experience
-      const firstGoal = data.goals[0]?.id; // e.g., "lose-fat"
+      const firstGoal = data.goals[0]?.id;
       const experience = data.preferences.exerciseExperience || "beginner";
-
-      // 2️⃣ Fetch workouts from workoutTemplates collection
       const workouts = await fetchWorkoutByGoalAndExperience(
         firstGoal,
         experience
       );
-
-      // 3️⃣ Assign workouts to user
       const assignedWorkouts = workouts.length > 0 ? workouts : [];
 
-      // 4️⃣ Save onboarding + assigned workouts to Firestore
       await setDoc(
-        doc(db, "users", user.email),
+        doc(db, "users", user.uid),
         {
           onboarding: data,
           onboardingCompleted: true,
           onboardingCompletedAt: new Date(),
           formsCompleted: true,
-          assignedWorkouts,
+          //assignedWorkouts,
         },
         { merge: true }
       );
 
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Error completing onboarding:", error);
     }
@@ -154,7 +178,6 @@ export default function Onboarding() {
           />
         </div>
       )}
-
       <div className="w-full">{renderCurrentStep()}</div>
     </div>
   );

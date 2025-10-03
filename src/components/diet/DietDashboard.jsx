@@ -81,7 +81,7 @@ export default function DietDashboard() {
 
       try {
         const dateKey = selectedDate.toISOString().split("T")[0];
-        const mealRef = doc(db, "users", user.email, "meals", dateKey);
+        const mealRef = doc(db, "users", user.uid, "meals", dateKey);
 
         await setDoc(
           mealRef,
@@ -114,7 +114,7 @@ export default function DietDashboard() {
     const fetchMeals = async () => {
       try {
         const dateKey = selectedDate.toISOString().split("T")[0];
-        const mealRef = doc(db, "users", user.email, "meals", dateKey);
+        const mealRef = doc(db, "users", user.uid, "meals", dateKey);
         const mealSnap = await getDoc(mealRef);
 
         if (mealSnap.exists()) {
@@ -144,13 +144,13 @@ export default function DietDashboard() {
         return;
       }
       try {
-        const docRef = doc(db, "users", currentUser.email);
+        const docRef = doc(db, "users", currentUser.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          setUser({ ...data, email: currentUser.email }); // keep email for saving
+          setUser({ ...data, email: currentUser.email, uid: currentUser.uid }); // keep email for saving
 
           // ✅ load global calorie goal & macros if available
           if (data.dailyLimit) {
@@ -327,7 +327,7 @@ export default function DietDashboard() {
 
       // Update Firestore
       const dateKey = selectedDate.toISOString().split("T")[0];
-      const mealRef = doc(db, "users", user.email, "meals", dateKey);
+      const mealRef = doc(db, "users", user.uid, "meals", dateKey);
 
       await setDoc(
         mealRef,
@@ -441,7 +441,7 @@ export default function DietDashboard() {
               <div className="flex items-center space-x-1">
                 <FaUtensils className="text-white text-sm" />
                 <span>
-                  Meals: <span className="font-semibold">0</span>
+                  Meals: <span className="font-semibold">{meals.length}</span>
                 </span>
               </div>
               <div className="flex items-center space-x-1">
@@ -803,18 +803,12 @@ export default function DietDashboard() {
                   if (!user || !selectedDate) return;
 
                   const dateKey = selectedDate.toISOString().split("T")[0];
-                  const mealRef = doc(
-                    db,
-                    "users",
-                    user.email,
-                    "meals",
-                    dateKey
-                  );
+                  const mealRef = doc(db, "users", user.uid, "meals", dateKey);
 
                   try {
                     // Save current dailyLimit and macros for this date
                     await setDoc(
-                      doc(db, "users", user.email),
+                      doc(db, "users", user.uid),
                       {
                         dailyLimit,
                         limitMacros: { ...macros },
@@ -909,13 +903,7 @@ export default function DietDashboard() {
                   if (!user || !selectedDate) return;
 
                   const dateKey = selectedDate.toISOString().split("T")[0];
-                  const mealRef = doc(
-                    db,
-                    "users",
-                    user.email,
-                    "meals",
-                    dateKey
-                  );
+                  const mealRef = doc(db, "users", user.uid, "meals", dateKey);
 
                   try {
                     await setDoc(
