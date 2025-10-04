@@ -520,7 +520,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-35">
+      <div className="flex-1 overflow-y-auto px-5 pb-18">
         {calendarView && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
             <Calendar

@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  addDoc,
+} from "firebase/firestore";
 import ChatWindow from "../components/dashboard/ChatWindow";
 
 export default function AdminInbox({ db, coachId }) {
+  const [users, setUsers] = useState([]);
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
+  const [activeTab, setActiveTab] = useState("users"); // mobile only
 
+  // Fetch chats
   useEffect(() => {
     if (!coachId) return;
 
@@ -25,37 +34,140 @@ export default function AdminInbox({ db, coachId }) {
     return () => unsub();
   }, [coachId, db]);
 
+  // Fetch users
+  useEffect(() => {
+    const q = query(collection(db, "users"));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const userList = snapshot.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((u) => u.role !== "coach");
+      setUsers(userList);
+    });
+
+    return () => unsub();
+  }, [db]);
+
+  const startChatWithUser = async (user) => {
+    const existing = chats.find((c) => c.participants.includes(user.id));
+    if (existing) {
+      setSelectedChat(existing);
+      return;
+    }
+
+    const newChat = {
+      participants: [coachId, user.id],
+      userName: user.onboarding?.firstName || "Unknown",
+      userEmail: user.email,
+      lastMessage: "",
+      updatedAt: new Date(),
+    };
+
+    const docRef = await addDoc(collection(db, "chats"), newChat);
+    setSelectedChat({ id: docRef.id, ...newChat });
+  };
+
+  const isMobile = window.innerWidth < 768;
+
   return (
-    <div className="flex h-full">
-      {/* Left sidebar */}
-      <div className="w-1/3 border-r overflow-y-auto">
-        {chats.map((chat) => {
-          const otherUser = chat.participants.find((id) => id !== coachId);
-          return (
+    <div className="flex flex-col h-full">
+      {/* Mobile Tabs */}
+      {isMobile && !selectedChat && (
+        <div className="flex border-b">
+          <button
+            className={`flex-1 p-3 font-medium ${
+              activeTab === "users" ? "border-b-2 border-cyan-600" : ""
+            }`}
+            onClick={() => setActiveTab("users")}
+          >
+            Users
+          </button>
+          <button
+            className={`flex-1 p-3 font-medium ${
+              activeTab === "chats" ? "border-b-2 border-cyan-600" : ""
+            }`}
+            onClick={() => setActiveTab("chats")}
+          >
+            Open Chats
+          </button>
+        </div>
+      )}
+
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar: Users & Chats */}
+        {(!selectedChat || !isMobile) && (
+          <div className="w-full md:w-1/3 border-r overflow-y-auto flex flex-col">
+            {/* Users list */}
             <div
-              key={chat.id}
-              onClick={() => setSelectedChat(chat)}
-              className={`p-3 cursor-pointer hover:bg-gray-100 ${
-                selectedChat?.id === chat.id ? "bg-gray-200" : ""
+              className={`overflow-y-auto ${
+                activeTab === "users" || !isMobile ? "block" : "hidden"
               }`}
             >
-              <p className="font-medium">{chat.userName || "Unknown User"}</p>
-              <p className="text-sm text-gray-500">{chat.userEmail || ""}</p>
-              <p className="text-xs text-gray-400 truncate">
-                {chat.lastMessage || "No messages yet"}
-              </p>
+              <h3 className="p-2 font-medium text-gray-700 border-b hidden md:block">
+                Users
+              </h3>
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  onClick={() => startChatWithUser(user)}
+                  className="p-3 cursor-pointer hover:bg-gray-100"
+                >
+                  <p className="font-medium">{user.onboarding?.firstName}</p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                </div>
+              ))}
             </div>
-          );
-        })}
-      </div>
 
-      {/* Chat Window */}
-      <div className="flex-1">
-        {selectedChat ? (
-          <ChatWindow db={db} chatId={selectedChat.id} senderId={coachId} />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Select a user to chat
+            {/* Chats list */}
+            <div
+              className={`flex-1 overflow-y-auto ${
+                activeTab === "chats" || !isMobile ? "block" : "hidden"
+              }`}
+            >
+              <h3 className="p-2 font-medium text-gray-700 border-b hidden md:block">
+                Open Chats
+              </h3>
+              {chats.map((chat) => (
+                <div
+                  key={chat.id}
+                  onClick={() => setSelectedChat(chat)}
+                  className={`p-3 cursor-pointer hover:bg-gray-100 ${
+                    selectedChat?.id === chat.id ? "bg-gray-200" : ""
+                  }`}
+                >
+                  <p className="font-medium">{chat.userName || "Unknown"}</p>
+                  <p className="text-sm text-gray-500">
+                    {chat.userEmail || ""}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">
+                    {chat.lastMessage || "No messages yet"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Chat Window */}
+        {/* Chat Window */}
+        {selectedChat && (
+          <div className="flex-1 flex flex-col h-full bg-white">
+            {/* Mobile Header: Back + Username */}
+            {isMobile && (
+              <div className="h-16 px-4 flex justify-between items-center border-b">
+                <button
+                  className="text-cyan-600 font-medium"
+                  onClick={() => setSelectedChat(null)}
+                >
+                  ← Back
+                </button>
+                <p className="font-medium">{selectedChat.userName}</p>
+              </div>
+            )}
+
+            {/* Chat Window takes remaining height */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <ChatWindow db={db} chatId={selectedChat.id} senderId={coachId} />
+            </div>
           </div>
         )}
       </div>
