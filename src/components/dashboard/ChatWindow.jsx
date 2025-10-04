@@ -1,75 +1,82 @@
-// components/chat/ChatWindow.jsx
 import { useEffect, useState } from "react";
 import {
   collection,
   addDoc,
-  query,
-  orderBy,
-  onSnapshot,
   serverTimestamp,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 
-export default function ChatWindow({ db, userId, coachId, userRole }) {
+export default function ChatWindow({ db, chatId, senderId }) {
   const [messages, setMessages] = useState([]);
-  const [text, setText] = useState("");
+  const [newMsg, setNewMsg] = useState("");
 
-  const chatId = `${userId}_${coachId}`;
-
-  // Listen for messages
   useEffect(() => {
+    if (!chatId) return;
+
     const q = query(
       collection(db, "chats", chatId, "messages"),
-      orderBy("timestamp")
+      orderBy("createdAt", "asc")
     );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setMessages(msgs);
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      setMessages(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
-    return () => unsubscribe();
+
+    return () => unsub();
   }, [chatId, db]);
 
-  const handleSend = async () => {
-    if (!text.trim()) return;
-    await addDoc(collection(db, "chats", chatId, "messages"), {
-      senderId: userRole === "coach" ? coachId : userId,
-      senderRole: userRole,
-      text,
-      timestamp: serverTimestamp(),
+  const sendMessage = async () => {
+    if (!newMsg.trim()) return;
+
+    const msg = {
+      text: newMsg,
+      senderId,
+      createdAt: serverTimestamp(),
+    };
+
+    await addDoc(collection(db, "chats", chatId, "messages"), msg);
+
+    await updateDoc(doc(db, "chats", chatId), {
+      lastMessage: newMsg,
+      updatedAt: new Date(),
     });
-    setText("");
+
+    setNewMsg("");
   };
 
   return (
-    <div className="flex flex-col h-full border rounded">
+    <div className="flex flex-col h-full">
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((m) => (
           <div
             key={m.id}
-            className={m.senderRole === "user" ? "text-right" : "text-left"}
+            className={`p-2 rounded-lg max-w-xs ${
+              m.senderId === senderId
+                ? "bg-blue-500 text-white ml-auto"
+                : "bg-gray-200 text-gray-800"
+            }`}
           >
-            <span
-              className={`inline-block p-2 rounded ${
-                m.senderRole === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-black"
-              }`}
-            >
-              {m.text}
-            </span>
+            {m.text}
           </div>
         ))}
       </div>
-      <div className="flex p-2 border-t">
+
+      {/* Input */}
+      <div className="p-3 border-t flex">
         <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="flex-1 border rounded p-2 mr-2"
-          placeholder="Type a message"
+          value={newMsg}
+          onChange={(e) => setNewMsg(e.target.value)}
+          className="flex-1 border rounded-lg px-3 py-2"
+          placeholder="Type a message..."
         />
         <button
-          onClick={handleSend}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={sendMessage}
+          className="ml-2 px-4 py-2 bg-blue-600 text-white rounded-lg"
         >
           Send
         </button>

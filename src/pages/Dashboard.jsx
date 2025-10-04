@@ -62,8 +62,9 @@ export default function Dashboard() {
   }, [activeTab]);
 
   const auth = getAuth();
+  const user = auth.currentUser;
   const userId = auth.currentUser?.uid; // current logged-in user
-  const isCoach = auth.currentUser?.email === "coach1@gmail.com";
+  const COACH_EMAIL = "coachvirat@gmail.com";
   const allPrograms = [...bodybuilding, ...fatloss, ...rehab];
 
   // Helper: convert programStartDate + week + day => yyyy-MM-dd
@@ -886,24 +887,14 @@ export default function Dashboard() {
             {activeTab === "explore" && (
               <div className="text-center text-gray-500 mt-10">Explore Tab</div>
             )}
-            {activeTab === "chat" && (
-              <div className="h-full">
-                {isCoach ? (
-                  <AdminInbox
-                    db={db}
-                    coachId={userId}
-                    userRole="coach" // ✅ add this
-                  />
-                ) : (
-                  <UserInbox
-                    db={db}
-                    userId={userId}
-                    coachId="coach1@gmail.com"
-                    userRole="user" // ✅ add this
-                  />
-                )}
-              </div>
-            )}
+            {activeTab === "chat" &&
+              (user?.email === COACH_EMAIL ? (
+                // Coach view
+                <AdminInbox db={db} coachId={user.email} />
+              ) : (
+                // User view
+                <UserInbox db={db} userId={user?.uid} coachId={COACH_EMAIL} />
+              ))}
           </>
         )}
       </div>
