@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // <-- import this
 import {
   collection,
   addDoc,
@@ -11,17 +12,24 @@ import {
 } from "firebase/firestore";
 import { format, isToday, isYesterday } from "date-fns";
 
-export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
+export default function AdminChatWindow({
+  db,
+  chatId,
+  senderId,
+  user,
+  onBack,
+}) {
   const [messages, setMessages] = useState([]);
   const [newMsg, setNewMsg] = useState("");
   const messagesEndRef = useRef(null);
   const firstLoad = useRef(true);
+  const navigate = useNavigate(); // <-- initialize navigate
 
   // Scroll to bottom when messages update
   useEffect(() => {
     if (firstLoad.current) {
       firstLoad.current = false;
-      return;
+      return; // skip scroll on initial load
     }
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -91,20 +99,29 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-gray-50">
-      {/* TOP FIXED USER/COACH INFO WITH BACK */}
-      <div className="fixed top-20 border-t left-0 right-0 bg-white border-b px-6 py-3 flex justify-end items-center z-50">
+      {/* TOP FIXED USER INFO WITH BACK */}
+      <div className="fixed top-20 left-0 right-0 bg-white border-t border-b px-6 py-3 flex items-center justify-between z-50">
+        {/* Left: Back Text */}
+        <div
+          className="text-cyan-600 font-semibold cursor-pointer"
+          onClick={onBack} // <-- go back one step
+        >
+          Back
+        </div>
+
         {/* Right: User Info */}
         <div className="flex items-center space-x-3">
           <div className="text-right">
             <p className="font-semibold text-gray-800">
-              {user?.onboarding?.firstName || "Coach Virat"}
+              {user?.onboarding?.firstName || "Unknown User"}
             </p>
+            <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
           <img
             src={
               user?.photoURL ||
               `https://ui-avatars.com/api/?name=${
-                user?.onboarding?.firstName || "Coach"
+                user?.onboarding?.firstName || "User"
               }`
             }
             alt="profile"
@@ -114,7 +131,7 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
       </div>
 
       {/* SCROLLABLE MESSAGES AREA */}
-      <div className="flex-1 overflow-y-auto px-4 pt-[0px] pb-[12px]">
+      <div className="flex-1 overflow-y-auto px-4 pt-18 pb-[50px]">
         <div className="flex flex-col gap-3">
           {messages.map((m, index) => {
             const msgDate = m.createdAt?.toDate
@@ -146,25 +163,9 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
                 >
                   <div className="flex justify-between items-end">
                     <span>{m.text}</span>
-                    <div className="flex items-end ml-2">
-                      <span className="text-[10px] text-gray-700 flex-shrink-0">
-                        {timeString}
-                      </span>
-                      {m.senderId === senderId && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`h-3 w-3 ml-1 ${
-                            m.readBy?.length > 0
-                              ? "text-white"
-                              : "text-white/70"
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
-                        </svg>
-                      )}
-                    </div>
+                    <span className="text-[10px] text-gray-700 ml-2">
+                      {timeString}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -175,7 +176,7 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
       </div>
 
       {/* BOTTOM FIXED INPUT */}
-      <div className="fixed bottom-14 left-0 right-0 bg-gray-50 flex items-center space-x-2 px-5 py-2 shadow-sm z-50">
+      <div className="fixed bottom-14 left-0 right-0 bg-white flex items-center space-x-2 px-5 py-2 shadow-sm z-50">
         <input
           value={newMsg}
           onChange={(e) => setNewMsg(e.target.value)}

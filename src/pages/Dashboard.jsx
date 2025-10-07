@@ -7,6 +7,7 @@ import { collection, doc, getDocs, getDoc, setDoc } from "firebase/firestore";
 import ChatWindow from "../components/dashboard/ChatWindow";
 import AdminInbox from "../admin/AdminInbox";
 import UserInbox from "../components/dashboard/UserInbox";
+import ExploreTab from "../components/explore/ExploreTab";
 
 import Calendar from "../components/dashboard/Calender";
 import TopBar from "../components/dashboard/TopBar";
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const [programStartDate, setProgramStartDate] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "workout";
+  const [selectedChatUser, setSelectedChatUser] = useState(null);
   const [activeTab, setActiveTab] = useState(() => {
     // Check if this is a new user
     const savedTab = localStorage.getItem("dashboardActiveTab");
@@ -508,19 +510,19 @@ export default function Dashboard() {
 
   // ------------------- Render -------------------
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-gray-50 via-white to-gray-100 relative">
+    <div className="h-screen flex flex-col bg-gray-50 relative">
       <div className="sticky top-0 z-40">
         <TopBar
           onCalendar={() => setCalendarView(true)}
           onNotifications={() => {}}
         />
-        <div className="bg-white text-center py-2 text-gray-700 font-semibold shadow-sm">
+        <div className="bg-white text-[14px] text-center py-1 text-gray-700 font-semibold shadow-sm">
           Welcome,{" "}
           {userName || auth.currentUser?.displayName || auth.currentUser?.email}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-18">
+      <div className="flex-1 overflow-y-auto transition-all duration-200 px-5">
         {calendarView && (
           <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
             <Calendar
@@ -726,175 +728,206 @@ export default function Dashboard() {
           <>
             {/* Workout Tab */}
             {activeTab === "workout" && (
-              <>
-                {/* Main Dashboard / Workouts */}
-                {!calendarView && !calendarDetails && (
-                  <>
-                    {/* Current Program Carousel */}
-                    {currentProgram && !selectedWorkout && (
-                      <WorkoutCarousel
-                        title="🔥 Ongoing Workout"
-                        programs={[currentProgram]}
-                        cardHighlight
-                        onClickCard={(program) => {
-                          setSelectedWorkout(program);
-                          setSelectedWeek(null);
-                          setSelectedDay(null);
-                          fetchWeeks(program);
-                          setStarted(true);
-                        }}
-                      />
-                    )}
-
-                    {/* Workout selection */}
-                    {!selectedWorkout && (
-                      <>
+              <div className="pt-0 pb-20">
+                <>
+                  {/* Main Dashboard / Workouts */}
+                  {!calendarView && !calendarDetails && (
+                    <>
+                      {/* Current Program Carousel */}
+                      {currentProgram && !selectedWorkout && (
                         <WorkoutCarousel
-                          title="💪 Bodybuilding Workouts"
-                          programs={bodybuilding}
-                          onClickCard={(p) => setSelectedWorkout(p)}
-                        />
-                        <WorkoutCarousel
-                          title="🔥 Fat Loss Programs"
-                          programs={fatloss}
-                          onClickCard={(p) => setSelectedWorkout(p)}
-                        />
-                        <WorkoutCarousel
-                          title="🩺 Rehab Programs"
-                          programs={rehab}
-                          onClickCard={(p) => setSelectedWorkout(p)}
-                        />
-                      </>
-                    )}
-
-                    {/* Workout Info / Start */}
-                    {selectedWorkout && !started && (
-                      <WorkoutInfo
-                        workout={selectedWorkout}
-                        onBack={() => setSelectedWorkout(null)}
-                        onStart={async () => {
-                          if (!userId) return;
-                          try {
-                            const today = format(new Date(), "yyyy-MM-dd");
-                            await setDoc(
-                              doc(db, "users", userId),
-                              {
-                                currentProgram: selectedWorkout.dbName,
-                                programStartDate: programStartDate || today,
-                              },
-                              { merge: true }
-                            );
-                            setCurrentProgram(selectedWorkout);
-                            setProgramStartDate(programStartDate || today);
-                            await fetchWeeks(selectedWorkout);
+                          title="🔥 Ongoing Workout"
+                          programs={[currentProgram]}
+                          cardHighlight
+                          onClickCard={(program) => {
+                            setSelectedWorkout(program);
+                            setSelectedWeek(null);
+                            setSelectedDay(null);
+                            fetchWeeks(program);
                             setStarted(true);
-                          } catch (err) {
-                            console.error("onStart error:", err);
+                          }}
+                        />
+                      )}
+
+                      {/* Workout selection */}
+                      {!selectedWorkout && (
+                        <>
+                          <WorkoutCarousel
+                            title="💪 Bodybuilding Workouts"
+                            programs={bodybuilding}
+                            onClickCard={(p) => setSelectedWorkout(p)}
+                          />
+                          <WorkoutCarousel
+                            title="🔥 Fat Loss Programs"
+                            programs={fatloss}
+                            onClickCard={(p) => setSelectedWorkout(p)}
+                          />
+                          <WorkoutCarousel
+                            title="🩺 Rehab Programs"
+                            programs={rehab}
+                            onClickCard={(p) => setSelectedWorkout(p)}
+                          />
+                        </>
+                      )}
+
+                      {/* Workout Info / Start */}
+                      {selectedWorkout && !started && (
+                        <WorkoutInfo
+                          workout={selectedWorkout}
+                          onBack={() => setSelectedWorkout(null)}
+                          onStart={async () => {
+                            if (!userId) return;
+                            try {
+                              const today = format(new Date(), "yyyy-MM-dd");
+                              await setDoc(
+                                doc(db, "users", userId),
+                                {
+                                  currentProgram: selectedWorkout.dbName,
+                                  programStartDate: programStartDate || today,
+                                },
+                                { merge: true }
+                              );
+                              setCurrentProgram(selectedWorkout);
+                              setProgramStartDate(programStartDate || today);
+                              await fetchWeeks(selectedWorkout);
+                              setStarted(true);
+                            } catch (err) {
+                              console.error("onStart error:", err);
+                            }
+                          }}
+                        />
+                      )}
+
+                      {/* Week Selector */}
+                      {selectedWorkout && started && !selectedWeek && (
+                        <WeekSelector
+                          weeks={weeks}
+                          getWeekStatus={getWeekStatus}
+                          onSelectWeek={(w) =>
+                            fetchDays(selectedWorkout, w).then(() =>
+                              setSelectedWeek(w)
+                            )
                           }
-                        }}
-                      />
-                    )}
+                          onBack={() => {
+                            setStarted(false);
+                            setSelectedWeek(null);
+                          }}
+                          isProgramStarted={
+                            !!(
+                              currentProgram &&
+                              selectedWorkout &&
+                              currentProgram.dbName === selectedWorkout.dbName
+                            )
+                          }
+                          goToDashboard={() => {
+                            setSelectedWorkout(null);
+                            setSelectedWeek(null);
+                            setSelectedDay(null);
+                            setStarted(false);
+                          }}
+                        />
+                      )}
 
-                    {/* Week Selector */}
-                    {selectedWorkout && started && !selectedWeek && (
-                      <WeekSelector
-                        weeks={weeks}
-                        getWeekStatus={getWeekStatus}
-                        onSelectWeek={(w) =>
-                          fetchDays(selectedWorkout, w).then(() =>
-                            setSelectedWeek(w)
-                          )
-                        }
-                        onBack={() => {
-                          setStarted(false);
-                          setSelectedWeek(null);
-                        }}
-                        isProgramStarted={
-                          !!(
-                            currentProgram &&
-                            selectedWorkout &&
-                            currentProgram.dbName === selectedWorkout.dbName
-                          )
-                        }
-                        goToDashboard={() => {
-                          setSelectedWorkout(null);
-                          setSelectedWeek(null);
-                          setSelectedDay(null);
-                          setStarted(false);
-                        }}
-                      />
-                    )}
+                      {/* Day Selector */}
+                      {selectedWeek && !selectedDay && (
+                        <DaySelector
+                          days={days}
+                          completedDays={completedDays}
+                          selectedWorkout={selectedWorkout}
+                          selectedWeek={selectedWeek}
+                          onSelectDay={(d) =>
+                            fetchExercises(
+                              selectedWorkout,
+                              selectedWeek,
+                              d
+                            ).then(() => setSelectedDay(d))
+                          }
+                          onBack={() => setSelectedWeek(null)}
+                        />
+                      )}
 
-                    {/* Day Selector */}
-                    {selectedWeek && !selectedDay && (
-                      <DaySelector
-                        days={days}
-                        completedDays={completedDays}
-                        selectedWorkout={selectedWorkout}
-                        selectedWeek={selectedWeek}
-                        onSelectDay={(d) =>
-                          fetchExercises(selectedWorkout, selectedWeek, d).then(
-                            () => setSelectedDay(d)
-                          )
-                        }
-                        onBack={() => setSelectedWeek(null)}
-                      />
-                    )}
-
-                    {/* Exercises List */}
-                    {selectedDay && (
-                      <ExercisesList
-                        exercises={exercises}
-                        completedExercises={completedExercises}
-                        handleToggleExercise={handleToggleExercise}
-                        handleToggleAll={handleToggleAll}
-                        allCompleted={allCompleted}
-                        noteInput={noteInput}
-                        setNoteInput={setNoteInput}
-                        notesHistory={notesHistory}
-                        setNotesHistory={setNotesHistory}
-                        savingNote={savingNote}
-                        setSavingNote={setSavingNote}
-                        handleSaveProgress={handleSaveProgress}
-                        selectedWorkout={selectedWorkout}
-                        selectedWeek={selectedWeek}
-                        selectedDay={selectedDay}
-                        completedDays={completedDays}
-                        userId={userId}
-                        db={db}
-                        setSelectedDay={setSelectedDay}
-                        setSelectedWeek={setSelectedWeek}
-                        setStarted={setStarted}
-                        setSelectedWorkout={setSelectedWorkout}
-                      />
-                    )}
-                  </>
-                )}
-              </>
+                      {/* Exercises List */}
+                      {selectedDay && (
+                        <ExercisesList
+                          exercises={exercises}
+                          completedExercises={completedExercises}
+                          handleToggleExercise={handleToggleExercise}
+                          handleToggleAll={handleToggleAll}
+                          allCompleted={allCompleted}
+                          noteInput={noteInput}
+                          setNoteInput={setNoteInput}
+                          notesHistory={notesHistory}
+                          setNotesHistory={setNotesHistory}
+                          savingNote={savingNote}
+                          setSavingNote={setSavingNote}
+                          handleSaveProgress={handleSaveProgress}
+                          selectedWorkout={selectedWorkout}
+                          selectedWeek={selectedWeek}
+                          selectedDay={selectedDay}
+                          completedDays={completedDays}
+                          userId={userId}
+                          db={db}
+                          setSelectedDay={setSelectedDay}
+                          setSelectedWeek={setSelectedWeek}
+                          setStarted={setStarted}
+                          setSelectedWorkout={setSelectedWorkout}
+                        />
+                      )}
+                    </>
+                  )}
+                </>
+              </div>
             )}
 
             {/* Diet Tab */}
             {activeTab === "diet" && userId && (
-              <DietDashboard userId={userId} />
+              <div className="pt-0 pb-20">
+                <DietDashboard userId={userId} />
+              </div>
             )}
 
             {/* Other Tabs */}
             {activeTab === "progress" && (
-              <div className="text-center text-gray-500 mt-10">
+              <div className="text-center text-gray-500 mt-10 pt-0 pb-20">
                 Progress Tab
               </div>
             )}
+
             {activeTab === "explore" && (
-              <div className="text-center text-gray-500 mt-10">Explore Tab</div>
+              <div className="pt-0 pb-20">
+                <ExploreTab />
+              </div>
             )}
-            {activeTab === "chat" &&
-              (user?.email === COACH_EMAIL ? (
-                // Coach view
-                <AdminInbox db={db} coachId={user.email} />
-              ) : (
-                // User view
-                <UserInbox db={db} userId={user?.uid} coachId={COACH_EMAIL} />
-              ))}
+
+            {/* Chat Tab */}
+            {activeTab === "chat" && (
+              <div className="pt-0 pb-20">
+                {!selectedChatUser ? (
+                  user?.email === COACH_EMAIL ? (
+                    <AdminInbox
+                      db={db}
+                      coachId={user.email}
+                      onSelectUser={setSelectedChatUser}
+                    />
+                  ) : (
+                    <UserInbox
+                      db={db}
+                      userId={user?.uid}
+                      coachId={COACH_EMAIL}
+                      onSelectUser={setSelectedChatUser}
+                    />
+                  )
+                ) : (
+                  <AdminChatWindow
+                    db={db}
+                    chatId={selectedChatUser.chatId}
+                    senderId={user.uid}
+                    user={selectedChatUser}
+                    onBack={() => setSelectedChatUser(null)}
+                  />
+                )}
+              </div>
+            )}
           </>
         )}
       </div>

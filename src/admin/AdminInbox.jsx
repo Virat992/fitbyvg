@@ -6,7 +6,7 @@ import {
   onSnapshot,
   addDoc,
 } from "firebase/firestore";
-import ChatWindow from "../components/dashboard/ChatWindow";
+import AdminChatWindow from "../components/dashboard/AdminChatWindow";
 
 export default function AdminInbox({ db, coachId }) {
   const [users, setUsers] = useState([]);
@@ -77,7 +77,7 @@ export default function AdminInbox({ db, coachId }) {
             className={`flex-1 p-3 font-medium ${
               activeTab === "users" ? "border-b-2 border-cyan-600" : ""
             }`}
-            onClick={() => setActiveTab("users")}
+            onClick={() => setActiveTab("users")} // <-- switch tab
           >
             Users
           </button>
@@ -148,25 +148,22 @@ export default function AdminInbox({ db, coachId }) {
         )}
 
         {/* Chat Window */}
-        {/* Chat Window */}
         {selectedChat && (
           <div className="flex-1 flex flex-col h-full bg-white">
             {/* Mobile Header: Back + Username */}
-            {isMobile && (
-              <div className="h-16 px-4 flex justify-between items-center border-b">
-                <button
-                  className="text-cyan-600 font-medium"
-                  onClick={() => setSelectedChat(null)}
-                >
-                  ← Back
-                </button>
-                <p className="font-medium">{selectedChat.userName}</p>
-              </div>
-            )}
 
             {/* Chat Window takes remaining height */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <ChatWindow db={db} chatId={selectedChat.id} senderId={coachId} />
+              <AdminChatWindow
+                db={db}
+                chatId={selectedChat.id}
+                senderId={coachId}
+                user={users.find(
+                  (u) =>
+                    selectedChat.participants.includes(u.id) && u.id !== coachId
+                )}
+                onBack={() => setSelectedChat(null)} // <-- HERE
+              />
             </div>
           </div>
         )}
