@@ -5,7 +5,11 @@ import { signOut } from "firebase/auth";
 import { auth } from "../../services/firebase";
 import { useNavigate } from "react-router-dom";
 
-export default function TopBar({ onCalendar, onNotifications }) {
+export default function TopBar({
+  onCalendar,
+  onNotifications,
+  onProfileClick,
+}) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const navigate = useNavigate();
   const menuRef = useRef();
@@ -52,7 +56,7 @@ export default function TopBar({ onCalendar, onNotifications }) {
         />
         <div className="relative">
           <User
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            onClick={onProfileClick}
             className="w-5 h-5 cursor-pointer hover:text-gray-200 transition"
           />
           {showProfileMenu && (

@@ -143,34 +143,39 @@ export default function DietDashboard() {
         setLoading(false);
         return;
       }
+
       try {
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
+        const userRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(userRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
 
-          setUser({ ...data, email: currentUser.email, uid: currentUser.uid }); // keep email for saving
+          setUser({ ...data, email: currentUser.email, uid: currentUser.uid });
 
-          // ✅ load global calorie goal & macros if available
+          // ✅ Only set dailyLimit if it's missing
           if (data.dailyLimit) {
             setDailyLimit(data.dailyLimit);
           } else {
-            // fallback: calculate from physical info if no saved value
-            const maintenance = calculateMaintenance(
+            const calculated = calculateMaintenance(
               data.onboarding?.physicalInfo
             );
-            setDailyLimit(maintenance);
+
+            let adjusted = calculated;
+            const goalId = data.onboarding?.goals?.[0]?.id || "";
+            if (goalId === "lose-fat") adjusted -= 300;
+            else if (goalId === "gain-muscle") adjusted += 300;
+
+            setDailyLimit(adjusted);
+
+            // Save it in Firestore for future use
+            await setDoc(userRef, { dailyLimit: adjusted }, { merge: true });
           }
 
-          if (data.limitMacros) {
-            setMacros(data.limitMacros);
-          }
+          // Load macros if set
+          if (data.limitMacros) setMacros(data.limitMacros);
 
-          // meals are still daily, safe to keep here if you’re storing them
-          setMeals(data.meals || []);
-
-          // onboarding info
+          // Onboarding info
           setEditInfo({
             age: data.onboarding?.physicalInfo?.age || 25,
             height: data.onboarding?.physicalInfo?.height || 170,
@@ -180,10 +185,7 @@ export default function DietDashboard() {
               data.onboarding?.physicalInfo?.physicalActivity || "moderate",
           });
 
-          // goals
           setSelectedGoal(data.onboarding?.goals?.[0]?.id || "");
-
-          // ✅ grab firstName from onboarding
           setFirstName(data.onboarding?.firstName || "");
         }
       } catch (err) {
@@ -243,15 +245,6 @@ export default function DietDashboard() {
   };
 
   // ---------- Calculate dailyLimit whenever info or goal changes ----------
-  useEffect(() => {
-    const maintenance = calculateMaintenance(editInfo);
-    let limit = maintenance;
-
-    if (selectedGoal === "lose-fat") limit -= 300;
-    else if (selectedGoal === "gain-muscle") limit += 300;
-
-    setDailyLimit(limit);
-  }, [editInfo, selectedGoal]);
 
   const maintenance = calculateMaintenance(editInfo);
 

@@ -21,6 +21,8 @@ import { useSearchParams } from "react-router-dom";
 
 import { bodybuilding, fatloss, rehab } from "../data/programs";
 import DietDashboard from "../components/diet/DietDashboard";
+import EditProfile from "../components/dashboard/EditProfile";
+import ProgressTab from "../components/dashboard/ProgressTab";
 
 export default function Dashboard() {
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -43,6 +45,7 @@ export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get("tab") || "workout";
   const [selectedChatUser, setSelectedChatUser] = useState(null);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     // Check if this is a new user
     const savedTab = localStorage.getItem("dashboardActiveTab");
@@ -515,7 +518,17 @@ export default function Dashboard() {
         <TopBar
           onCalendar={() => setCalendarView(true)}
           onNotifications={() => {}}
+          onProfileClick={() => setShowEditProfile(true)}
         />
+
+        {showEditProfile && (
+          <EditProfile
+            db={db}
+            userId={userId}
+            onClose={() => setShowEditProfile(false)}
+          />
+        )}
+
         <div className="bg-white text-[14px] text-center py-1 text-gray-700 font-semibold shadow-sm">
           Welcome,{" "}
           {userName || auth.currentUser?.displayName || auth.currentUser?.email}
@@ -886,10 +899,9 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Other Tabs */}
             {activeTab === "progress" && (
               <div className="text-center text-gray-500 mt-10 pt-0 pb-20">
-                Progress Tab
+                <ProgressTab userId={userId} />
               </div>
             )}
 
