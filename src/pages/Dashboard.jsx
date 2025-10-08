@@ -900,7 +900,7 @@ export default function Dashboard() {
             )}
 
             {activeTab === "progress" && (
-              <div className="text-center text-gray-500 mt-10 pt-0 pb-20">
+              <div className="text-center text-gray-500 mt-0 pt-0 pb-15">
                 <ProgressTab userId={userId} />
               </div>
             )}

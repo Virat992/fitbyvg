@@ -11,7 +11,7 @@ import AddMealModal from "./AddMealModal";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-export default function DietDashboard() {
+export default function DietDashboard({ userId }) {
   // ---------- Hooks (top level only) ----------
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,6 +51,7 @@ export default function DietDashboard() {
     fat: 0,
   });
   const [firstName, setFirstName] = useState("");
+  const [calorieLimit, setCalorieLimit] = useState(2000);
 
   const mockFoodList = [
     { id: "1", name: "Chicken Breast", caloriesPer100g: 165 },
@@ -135,6 +136,27 @@ export default function DietDashboard() {
 
     fetchMeals();
   }, [user, selectedDate]);
+
+  // ✅ Fetch calorie limit (fixed globally for user)
+  useEffect(() => {
+    const fetchCalorieLimit = async () => {
+      try {
+        const userRef = doc(db, "users", userId);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.dailyLimit) setCalorieLimit(data.dailyLimit);
+        } else {
+          // create default once if not present
+          await setDoc(userRef, { dailyLimit: 2000 });
+        }
+      } catch (error) {
+        console.error("Error fetching calorie limit:", error);
+      }
+    };
+
+    fetchCalorieLimit();
+  }, []);
 
   // ---------- Fetch user ----------
   useEffect(() => {
@@ -242,6 +264,16 @@ export default function DietDashboard() {
     };
     const activityFactor = activityFactorMap[physicalActivity] || 1.55;
     return Math.round(bmr * activityFactor);
+  };
+
+  const updateCalorieLimit = async (newLimit) => {
+    try {
+      const userRef = doc(db, "users", userId);
+      await setDoc(userRef, { dailyLimit: newLimit }, { merge: true });
+      setCalorieLimit(newLimit);
+    } catch (error) {
+      console.error("Error updating calorie limit:", error);
+    }
   };
 
   // ---------- Calculate dailyLimit whenever info or goal changes ----------
@@ -766,11 +798,16 @@ export default function DietDashboard() {
                 <input
                   type="number"
                   value={dailyLimit === 0 ? "" : dailyLimit}
-                  onChange={(e) =>
-                    setDailyLimit(
-                      e.target.value === "" ? "" : Number(e.target.value)
-                    )
-                  }
+                  onChange={(e) => {
+                    const newValue =
+                      e.target.value === "" ? "" : Number(e.target.value);
+                    setDailyLimit(newValue);
+                  }}
+                  onBlur={() => {
+                    if (dailyLimit && dailyLimit > 0) {
+                      updateCalorieLimit(dailyLimit); // 👈 call Firestore update only when user leaves field
+                    }
+                  }}
                   placeholder="Daily Calories"
                   className="w-full p-2 border rounded-lg"
                 />
