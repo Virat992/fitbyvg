@@ -741,7 +741,7 @@ export default function Dashboard() {
           <>
             {/* Workout Tab */}
             {activeTab === "workout" && (
-              <div className="pt-0 pb-20">
+              <div className="pt-0 pb-38">
                 <>
                   {/* Main Dashboard / Workouts */}
                   {!calendarView && !calendarDetails && (
@@ -894,19 +894,19 @@ export default function Dashboard() {
 
             {/* Diet Tab */}
             {activeTab === "diet" && userId && (
-              <div className="pt-0 pb-20">
+              <div className="pt-0 pb-34">
                 <DietDashboard userId={userId} />
               </div>
             )}
 
             {activeTab === "progress" && (
-              <div className="text-center text-gray-500 mt-0 pt-0 pb-15">
+              <div className="text-center text-gray-500 mt-0 pt-0 pb-34">
                 <ProgressTab userId={userId} />
               </div>
             )}
 
             {activeTab === "explore" && (
-              <div className="pt-0 pb-20">
+              <div className="pt-0 pb-38">
                 <ExploreTab />
               </div>
             )}

@@ -155,7 +155,7 @@ export default function ProgressTab({ userId }) {
     "bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition-shadow duration-300";
 
   return (
-    <div className="space-y-10 pt-5 pb-5 px-0">
+    <div className="space-y-10 pt-4 pb-5 px-0">
       {/* ----------- PAGE TITLE ----------- */}
       <h1 className="text-[22px] font-bold text-gray-800 mb-4 text-start">
         Progress Overview

@@ -92,11 +92,11 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-gray-50">
       {/* TOP FIXED USER/COACH INFO WITH BACK */}
-      <div className="fixed top-20 border-t left-0 right-0 bg-white border-b px-6 py-3 flex justify-end items-center z-50">
+      <div className="fixed top-20 border-t left-0 right-0 bg-white border-b px-6 py-1 flex justify-end items-center z-50">
         {/* Right: User Info */}
-        <div className="flex items-center space-x-3">
+        <div className="flex py-1 items-center space-x-3">
           <div className="text-right">
-            <p className="font-semibold text-gray-800">
+            <p className="font-semibold text-[15px] text-gray-800">
               {user?.onboarding?.firstName || "Coach Virat"}
             </p>
           </div>
@@ -108,13 +108,13 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
               }`
             }
             alt="profile"
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-8 h-8 rounded-full object-cover"
           />
         </div>
       </div>
 
       {/* SCROLLABLE MESSAGES AREA */}
-      <div className="flex-1 overflow-y-auto px-4 pt-[0px] pb-[12px]">
+      <div className="flex-1 overflow-y-auto px-4 pt-[50px] pb-[12px]">
         <div className="flex flex-col gap-3">
           {messages.map((m, index) => {
             const msgDate = m.createdAt?.toDate
@@ -130,6 +130,8 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
               showDate = msgDate.toDateString() !== prev.toDateString();
             }
 
+            const isSender = m.senderId === senderId;
+
             return (
               <div key={m.id}>
                 {showDate && (
@@ -137,39 +139,60 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
                     {getDateLabel(msgDate)}
                   </div>
                 )}
+
+                {/* Align message left or right */}
                 <div
-                  className={`p-2 rounded-lg max-w-[80%] break-words ${
-                    m.senderId === senderId
-                      ? "bg-cyan-500 text-white ml-auto"
-                      : "bg-gray-200 text-gray-800"
+                  className={`flex w-full ${
+                    isSender ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="flex justify-between items-end">
-                    <span>{m.text}</span>
-                    <div className="flex items-end ml-2">
-                      <span className="text-[10px] text-gray-700 flex-shrink-0">
-                        {timeString}
-                      </span>
-                      {m.senderId === senderId && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className={`h-3 w-3 ml-1 ${
-                            m.readBy?.length > 0
-                              ? "text-white"
-                              : "text-white/70"
-                          }`}
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
-                        </svg>
-                      )}
-                    </div>
+                  <div
+                    className={`relative px-4 py-2 rounded-2xl shadow-sm ${
+                      isSender
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-200 text-gray-800"
+                    }`}
+                    style={{
+                      maxWidth: "80%",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    <div className="text-sm leading-snug pr-14">{m.text}</div>
+
+                    {/* timestamp */}
+                    <span
+                      className={`absolute bottom-1 px-1 right-5 text-[10px] ${
+                        isSender ? "text-white/70" : "text-gray-600"
+                      }`}
+                    >
+                      {timeString}
+                    </span>
+
+                    {/* read tick */}
+                    {isSender && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={`absolute bottom-1 right-1.5 h-3.5 w-3.5 ${
+                          m.readBy?.length > 0 ? "text-white" : "text-white/60"
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        style={{
+                          paddingRight: "1px",
+                          paddingBottom: "1px",
+                          paddingLeft: "0px",
+                        }}
+                      >
+                        <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
+                      </svg>
+                    )}
                   </div>
                 </div>
               </div>
             );
           })}
+
           <div ref={messagesEndRef}></div>
         </div>
       </div>
