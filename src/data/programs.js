@@ -38,7 +38,7 @@ export const fatloss = [
   {
     name: "Fat Loss Beginner",
     dbName: "Fatloss-beginner",
-    img: "https://images.unsplash.com/photo-1483721310020-03333e577078?q=80&w=1228&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1480179087180-d9f0ec044897?q=80&w=715&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1483721310020-03333e577078?q=80&w=1228&auto=format&fit=crop",
     description: "Kickstart your fat loss journey with easy routines.",
     shortDesc: "Calorie burning beginner friendly plan.",
     phases: "1 Phase • 8 Weeks",
@@ -49,7 +49,7 @@ export const fatloss = [
   {
     name: "Fat Loss Intermediate",
     dbName: "Fatloss-intermediate",
-    img: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1170&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1758875569940-b69e9b392005?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1616279969856-759f316a5ac1?q=80&w=765&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1170&auto=format&fit=crop",
     description: "Moderate intensity fat loss program.",
     shortDesc: "Intermediate cardio & strength hybrid plan.",
     phases: "2 Phases • 10 Weeks",
@@ -60,7 +60,7 @@ export const fatloss = [
   {
     name: "Fat Loss Advanced",
     dbName: "Fatloss-advanced",
-    img: "https://images.unsplash.com/photo-1521804906057-1df8fdb718b7?q=80&w=1170&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1536922246289-88c42f957773?q=80&w=1204&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1521804906057-1df8fdb718b7?q=80&w=1170&auto=format&fit=crop",
     description: "High intensity fat loss training program.",
     shortDesc: "Burn maximum fat with HIIT & strength mix.",
     phases: "3 Phases • 12 Weeks",
@@ -85,7 +85,7 @@ export const rehab = [
   {
     name: "Knee Rehab",
     dbName: "Knee-rehab",
-    img: "https://images.unsplash.com/photo-1598970434795-0c54fe7c0648?q=80&w=1170&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1467818488384-3a21f2b79959?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1598970434795-0c54fe7c0648?q=80&w=1170&auto=format&fit=crop",
     description: "Rehabilitation program for knee recovery.",
     shortDesc: "Supportive movements for knees post-injury.",
     phases: "1 Phase • 6 Weeks",
@@ -96,7 +96,7 @@ export const rehab = [
   {
     name: "Lower Back Rehab",
     dbName: "Lowerback-rehab",
-    img: "https://images.unsplash.com/photo-1584466977773-270f5b8ca1c3?q=80&w=1170&auto=format&fit=crop",
+    img: "https://images.unsplash.com/photo-1701826510609-b8d07deca0d4?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bG93ZXIlMjBiYWNrJTIwZXhlcmNpc2V8ZW58MHx8MHx8fDA%3Dhttps://images.unsplash.com/photo-1730157464700-08647c2f2536?q=80&w=736&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1584466977773-270f5b8ca1c3?q=80&w=1170&auto=format&fit=crop",
     description: "Rehabilitation program for lower back pain.",
     shortDesc: "Improve posture, strengthen core & lower back.",
     phases: "1 Phase • 6 Weeks",

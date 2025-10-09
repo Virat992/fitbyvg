@@ -152,17 +152,17 @@ export default function ProgressTab({ userId }) {
   }));
 
   const chartContainer =
-    "bg-white shadow rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300";
+    "bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition-shadow duration-300";
 
   return (
-    <div className="space-y-10 p-6">
+    <div className="space-y-10 pt-5 pb-5 px-0">
       {/* ----------- PAGE TITLE ----------- */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+      <h1 className="text-[22px] font-bold text-gray-800 mb-4 text-start">
         Progress Overview
       </h1>
 
       {/* ---------------- Filter Buttons ---------------- */}
-      <div className="flex flex-wrap gap-3 mb-6 justify-center">
+      <div className="flex flex-wrap gap-3 mb-6 justify-start">
         {["weekly", "monthly", "quarterly"].map((f) => (
           <button
             key={f}
@@ -180,77 +180,154 @@ export default function ProgressTab({ userId }) {
 
       {/* -------- Calories Chart -------- */}
       <div className={chartContainer}>
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+        <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
           Calories Intake
         </h2>
         {filteredCalories.length > 0 ? (
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={filteredCalories}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
-              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#374151" }} />
-              <YAxis tick={{ fontSize: 12, fill: "#374151" }} />
-              <Tooltip cursor={{ fill: "#f3f4f6" }} />
-              <Legend />
-              <Bar
-                dataKey="targetCalories"
-                fill="#93c5fd"
-                name="Target"
-                radius={[6, 6, 0, 0]}
-              />
-              <Bar
-                dataKey="consumedCalories"
-                fill="#3b82f6"
-                name="Consumed"
-                radius={[6, 6, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div
+            className="mx-auto pr-15"
+            style={{ width: "100%", maxWidth: "850px" }}
+          >
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={filteredCalories}
+                margin={{ left: 0, right: 0, top: 10, bottom: 10 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="4 4"
+                  vertical={false}
+                  stroke="#e0e0e0"
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12, fill: "#374151" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#374151" }}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "none",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                  }}
+                  cursor={{ fill: "rgba(59,130,246,0.1)" }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                />
+                <defs>
+                  <linearGradient
+                    id="targetGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#93c5fd" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient
+                    id="consumedGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#1e40af" stopOpacity={0.8} />
+                  </linearGradient>
+                </defs>
+                <Bar
+                  dataKey="targetCalories"
+                  name="Target"
+                  fill="url(#targetGradient)"
+                  radius={[10, 10, 0, 0]}
+                />
+                <Bar
+                  dataKey="consumedCalories"
+                  name="Consumed"
+                  fill="url(#consumedGradient)"
+                  radius={[10, 10, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         ) : (
-          <p className="text-gray-500">No data for selected period.</p>
+          <p className="text-gray-500 text-center">
+            No data for selected period.
+          </p>
         )}
       </div>
 
       {/* -------- Macros Chart -------- */}
       <div className={chartContainer}>
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Macros (g)</h2>
+        <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
+          Macros (g)
+        </h2>
         {filteredCalories.length > 0 ? (
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={filteredCalories}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
-              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#374151" }} />
-              <YAxis tick={{ fontSize: 12, fill: "#374151" }} />
-              <Tooltip cursor={{ fill: "#f3f4f6" }} />
-              <Legend />
-              <Bar
-                dataKey="carbs"
-                fill="#f87171"
-                name="Carbs"
-                radius={[6, 6, 0, 0]}
-              />
-              <Bar
-                dataKey="protein"
-                fill="#34d399"
-                name="Protein"
-                radius={[6, 6, 0, 0]}
-              />
-              <Bar
-                dataKey="fat"
-                fill="#facc15"
-                name="Fat"
-                radius={[6, 6, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="mx-auto" style={{ width: "95%", maxWidth: "650px" }}>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={filteredCalories}
+                margin={{ left: 0, right: 0, top: 10, bottom: 10 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="4 4"
+                  vertical={false}
+                  stroke="#e0e0e0"
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12, fill: "#374151" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#374151" }}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "none",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                  }}
+                  cursor={{ fill: "rgba(59,130,246,0.1)" }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                />
+                <Bar
+                  dataKey="carbs"
+                  name="Carbs"
+                  fill="#f87171"
+                  radius={[10, 10, 0, 0]}
+                />
+                <Bar
+                  dataKey="protein"
+                  name="Protein"
+                  fill="#34d399"
+                  radius={[10, 10, 0, 0]}
+                />
+                <Bar
+                  dataKey="fat"
+                  name="Fat"
+                  fill="#facc15"
+                  radius={[10, 10, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         ) : (
-          <p className="text-gray-500">No macro data for selected period.</p>
+          <p className="text-gray-500 text-center">
+            No macro data for selected period.
+          </p>
         )}
       </div>
 
@@ -288,40 +365,63 @@ export default function ProgressTab({ userId }) {
         </div>
 
         {filteredWeightLogs.length > 0 ? (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={filteredWeightLogs}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="#e5e7eb"
-              />
-              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#374151" }} />
-              <YAxis
-                tick={{ fontSize: 12, fill: "#374151" }}
-                domain={[40, 150]} // fixed range
-              />
-              <Tooltip cursor={{ fill: "#f3f4f6" }} />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="weight"
-                stroke="#2563eb"
-                strokeWidth={3}
-                dot={{ r: 5, fill: "#2563eb" }}
-                activeDot={{ r: 6, fill: "#1e40af" }}
-                name="Weight"
+          <div className="mx-auto" style={{ width: "95%", maxWidth: "650px" }}>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart
+                data={filteredWeightLogs}
+                margin={{ left: 0, right: 0, top: 10, bottom: 10 }}
               >
-                <LabelList
-                  dataKey="weight"
-                  position="top"
-                  fontSize={12}
-                  fill="#2563eb"
+                <CartesianGrid
+                  strokeDasharray="4 4"
+                  vertical={false}
+                  stroke="#e0e0e0"
                 />
-              </Line>
-            </LineChart>
-          </ResponsiveContainer>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12, fill: "#374151" }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: "#374151" }}
+                  tickLine={false}
+                  domain={[40, 150]}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 8,
+                    border: "none",
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                  }}
+                  cursor={{ stroke: "#3b82f6", strokeWidth: 2 }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weight"
+                  name="Weight"
+                  stroke="#2563eb"
+                  strokeWidth={3}
+                  dot={{ r: 5, fill: "#2563eb" }}
+                  activeDot={{ r: 7, fill: "#1e40af" }}
+                >
+                  <LabelList
+                    dataKey="weight"
+                    position="top"
+                    fontSize={12}
+                    fill="#2563eb"
+                  />
+                </Line>
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         ) : (
-          <p className="text-gray-500">No weight data for selected period.</p>
+          <p className="text-gray-500 text-center">
+            No weight data for selected period.
+          </p>
         )}
 
         {showLogPanel && (

@@ -52,6 +52,7 @@ export default function DietDashboard({ userId }) {
   });
   const [firstName, setFirstName] = useState("");
   const [calorieLimit, setCalorieLimit] = useState(2000);
+  const [userDailyLimit, setUserDailyLimit] = useState(0);
 
   const mockFoodList = [
     { id: "1", name: "Chicken Breast", caloriesPer100g: 165 },
@@ -110,24 +111,35 @@ export default function DietDashboard({ userId }) {
 
   // ---------- Fetch meal ----------
   useEffect(() => {
-    if (!user || !selectedDate) return;
+    if (!user || !selectedDate || !calorieLimit) return;
 
     const fetchMeals = async () => {
       try {
-        const dateKey = selectedDate.toISOString().split("T")[0];
-        const mealRef = doc(db, "users", user.uid, "meals", dateKey);
+        const todayKey = selectedDate.toISOString().split("T")[0];
+        const mealRef = doc(db, "users", user.uid, "meals", todayKey);
         const mealSnap = await getDoc(mealRef);
 
         if (mealSnap.exists()) {
           const data = mealSnap.data();
           setMeals(data.meals || []);
-          setDailyLimit(data.dailyLimit || 0);
+          setDailyLimit(data.dailyLimit || calorieLimit);
           setLimitMacros(data.limitMacros || { protein: 0, carbs: 0, fat: 0 });
         } else {
+          // reset for a new day
           setMeals([]);
-          setDailyLimit(0);
           setLimitMacros({ protein: 0, carbs: 0, fat: 0 });
+
+          // ✅ make sure calorieLimit is available
+          await setDoc(mealRef, {
+            date: todayKey,
+            meals: [],
+            consumedCalories: 0,
+            consumedMacros: { protein: 0, carbs: 0, fat: 0 },
+            dailyLimit: calorieLimit, // persistent user limit
+            createdAt: new Date(),
+          });
         }
+
         setMealsFetched(true);
       } catch (err) {
         console.error("Failed to fetch meals:", err);
@@ -135,7 +147,7 @@ export default function DietDashboard({ userId }) {
     };
 
     fetchMeals();
-  }, [user, selectedDate]);
+  }, [user, selectedDate, calorieLimit]);
 
   // ✅ Fetch calorie limit (fixed globally for user)
   useEffect(() => {
@@ -594,7 +606,7 @@ export default function DietDashboard({ userId }) {
         {cards.map((card) => (
           <div
             key={card.id}
-            className={`${card.bg} snap-start flex-shrink-0 w-[100%]  rounded-2xl shadow-lg p-1 flex flex-col items-center`}
+            className={`${card.bg} snap-start cursor-pointer flex-shrink-0 w-[100%]  rounded-2xl shadow-sm hover:shadow-sm transition-all duration-300 p-1 flex flex-col items-center`}
           >
             <h3 className="text-lg font-semibold mb-4">{card.title}</h3>
             {card.content}

@@ -16,7 +16,8 @@ const articlesData = [
     id: 2,
     title: "Nutrition for Fat Loss",
     category: "Nutrition",
-    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c1e",
+    image:
+      "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1153&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1556911220-e15b29be8c1e",
     description:
       "Understand calorie deficits, macronutrient ratios, and how to sustain fat loss without compromising muscle mass or health.",
     link: "#",
@@ -25,7 +26,8 @@ const articlesData = [
     id: 3,
     title: "Optimizing Recovery and Sleep",
     category: "Recovery",
-    image: "https://images.unsplash.com/photo-1527137342181-19aab11a8ee8",
+    image:
+      "https://plus.unsplash.com/premium_photo-1714346729179-ad0182261029?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8aWNlJTIwYmF0aHxlbnwwfHwwfHx8MA%3D%3Dhttps://images.unsplash.com/photo-1527137342181-19aab11a8ee8",
     description:
       "Discover how proper rest, sleep quality, and recovery protocols can dramatically improve your training results.",
     link: "#",
@@ -43,7 +45,8 @@ const articlesData = [
     id: 5,
     title: "Gut Health and Immunity",
     category: "Health",
-    image: "https://images.unsplash.com/photo-1585238342028-4bbc4a474273",
+    image:
+      "https://images.unsplash.com/photo-1535914254981-b5012eebbd15?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3Dhttps://images.unsplash.com/photo-1585238342028-4bbc4a474273",
     description:
       "A healthy gut means a strong immune system. Learn about probiotics, prebiotics, and how to nourish your microbiome.",
     link: "#",
@@ -58,9 +61,9 @@ export default function ExploreTab() {
   }, []);
 
   return (
-    <div className="py-4 px-3 sm:px-4 md:px-6">
+    <div className="pt-5 px-0 sm:px-3 md:px-6">
       {/* Header */}
-      <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+      <h1 className="text-[22px] sm:text-2xl font-bold text-gray-800 mb-2">
         🧭 Explore Health & Fitness
       </h1>
       <p className="text-gray-600 text-sm sm:text-base mb-5">
