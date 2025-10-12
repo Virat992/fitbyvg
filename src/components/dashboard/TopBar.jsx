@@ -36,7 +36,7 @@ export default function TopBar({
   };
 
   return (
-    <div className="bg-cyan-600 text-white flex items-center justify-between px-4 py-3 shadow-md">
+    <div className="bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-400 text-white flex items-center justify-between px-4 py-3 shadow-md">
       {/* Clickable Logo */}
       <span
         onClick={() => navigate("/")}

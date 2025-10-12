@@ -65,7 +65,7 @@ export default function AddMealModal({ onClose, onSave }) {
 
     onSave({
       id: Date.now(),
-      items: mealItems, // full array of foods in the meal
+      items: mealItems,
       calories: totalCalories,
     });
 
@@ -74,8 +74,12 @@ export default function AddMealModal({ onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg p-6 w-96 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 p-4 flex justify-center items-center z-60">
+      {/* Glass background behind modal */}
+      <div className="absolute inset-0 bg-white/20 backdrop-blur-md"></div>
+
+      {/* Modal content */}
+      <div className="relative bg-white rounded-2xl shadow-lg p-6 w-96 max-h-[90vh] overflow-y-auto">
         <h3 className="text-xl font-bold mb-4">Add Meal</h3>
 
         {/* Search */}
@@ -88,7 +92,7 @@ export default function AddMealModal({ onClose, onSave }) {
         />
 
         {/* Food list */}
-        <div className="max-h-36 overflow-y-auto border rounded-xl mb-4">
+        <div className="max-h-36 p-2 overflow-y-auto border rounded-xl mb-4">
           {foodItems
             .filter((f) => f.name.toLowerCase().includes(query.toLowerCase()))
             .map((f) => (

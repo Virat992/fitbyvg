@@ -70,6 +70,7 @@ export default function Login() {
         }
       }
     } catch (error) {
+      console.error("Firebase Login Error:", error);
       switch (error.code) {
         case "auth/user-not-found":
           setErrors((prev) => ({ ...prev, email: "Email is not registered" }));

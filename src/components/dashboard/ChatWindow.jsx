@@ -17,7 +17,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
   const messagesEndRef = useRef(null);
   const firstLoad = useRef(true);
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     if (firstLoad.current) {
       firstLoad.current = false;
@@ -26,7 +25,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Fetch messages
   useEffect(() => {
     if (!chatId) return;
 
@@ -42,7 +40,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
     return () => unsub();
   }, [chatId, db]);
 
-  // Mark messages as read
   useEffect(() => {
     if (!chatId || !senderId) return;
 
@@ -62,7 +59,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
     markAsRead();
   }, [messages, chatId, senderId, db]);
 
-  // Send message
   const sendMessage = async () => {
     if (!newMsg.trim()) return;
 
@@ -74,7 +70,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
     };
 
     await addDoc(collection(db, "chats", chatId, "messages"), msg);
-
     await updateDoc(doc(db, "chats", chatId), {
       lastMessage: newMsg,
       updatedAt: new Date(),
@@ -90,31 +85,9 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 bg-gray-50">
-      {/* TOP FIXED USER/COACH INFO WITH BACK */}
-      <div className="fixed top-20 border-t left-0 right-0 bg-white border-b px-6 py-1 flex justify-end items-center z-50">
-        {/* Right: User Info */}
-        <div className="flex py-1 items-center space-x-3">
-          <div className="text-right">
-            <p className="font-semibold text-[15px] text-gray-800">
-              {user?.onboarding?.firstName || "Coach Virat"}
-            </p>
-          </div>
-          <img
-            src={
-              user?.photoURL ||
-              `https://ui-avatars.com/api/?name=${
-                user?.onboarding?.firstName || "Coach"
-              }`
-            }
-            alt="profile"
-            className="w-8 h-8 rounded-full object-cover"
-          />
-        </div>
-      </div>
-
-      {/* SCROLLABLE MESSAGES AREA */}
-      <div className="flex-1 overflow-y-auto px-4 pt-[50px] pb-[12px]">
+    <div className="flex flex-col h-full w-full bg-gray-50 rounded-xl overflow-hidden shadow-lg">
+      {/* SCROLLABLE MESSAGES */}
+      <div className="flex-1 overflow-y-auto pb-2 px-6 py-2">
         <div className="flex flex-col gap-3">
           {messages.map((m, index) => {
             const msgDate = m.createdAt?.toDate
@@ -140,7 +113,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
                   </div>
                 )}
 
-                {/* Align message left or right */}
                 <div
                   className={`flex w-full ${
                     isSender ? "justify-end" : "justify-start"
@@ -160,7 +132,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
                   >
                     <div className="text-sm leading-snug pr-14">{m.text}</div>
 
-                    {/* timestamp */}
                     <span
                       className={`absolute bottom-1 px-1 right-5 text-[10px] ${
                         isSender ? "text-white/70" : "text-gray-600"
@@ -169,7 +140,6 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
                       {timeString}
                     </span>
 
-                    {/* read tick */}
                     {isSender && (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -192,27 +162,26 @@ export default function ChatWindow({ db, chatId, senderId, onBack, user }) {
               </div>
             );
           })}
-
           <div ref={messagesEndRef}></div>
         </div>
       </div>
 
-      {/* BOTTOM FIXED INPUT */}
-      <div className="fixed bottom-14 left-0 right-0 bg-gray-50 flex items-center space-x-2 px-5 py-2 shadow-sm z-50">
+      {/* BOTTOM INPUT */}
+      <div className="w-full flex-shrink-0 flex items-center space-x-2 px-2 py-3 bg-gray-100  rounded-b-xl">
         <input
           value={newMsg}
           onChange={(e) => setNewMsg(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          className="flex-1 bg-gray-100 rounded-full px-4 py-4 text-sm focus:outline-none focus:ring focus:ring-cyan-300"
+          className="flex-1 bg-white rounded-full px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400 shadow-sm"
           placeholder="Type a message..."
         />
         <button
           onClick={sendMessage}
-          className="p-2 bg-cyan-600 rounded-full hover:bg-cyan-700 active:bg-cyan-800"
+          className="w-8 h-8 flex-shrink-0 bg-cyan-600 rounded-full hover:bg-cyan-700 active:bg-cyan-800 shadow-md flex items-center justify-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-white"
+            className="h-4 w-4 text-white"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

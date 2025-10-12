@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { addDays, parseISO, format } from "date-fns";
 import { getAuth } from "firebase/auth";
 import { db } from "../services/firebase";
@@ -23,6 +23,7 @@ import { bodybuilding, fatloss, rehab } from "../data/programs";
 import DietDashboard from "../components/diet/DietDashboard";
 import EditProfile from "../components/dashboard/EditProfile";
 import ProgressTab from "../components/dashboard/ProgressTab";
+import useDraggable from "../hooks/useDraggable";
 
 export default function Dashboard() {
   const [selectedWorkout, setSelectedWorkout] = useState(null);
@@ -61,6 +62,15 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dailySummary, setDailySummary] = useState(null);
   const [userName, setFirstName] = useState("");
+  // State to control chat window visibility
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const summaryInnerRef = useRef(null);
+
+  const dragHandleRef = useRef(null);
+  const [chatRef, pos] = useDraggable(
+    { x: window.innerWidth - 100, y: window.innerHeight - 150 },
+    dragHandleRef
+  );
 
   useEffect(() => {
     localStorage.setItem("dashboardActiveTab", activeTab);
@@ -535,29 +545,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto transition-all duration-200 px-5">
+      <div className="flex-1 max-h-[80vh] px-5 pb-15 py-0 relative overflow-auto">
         {calendarView && (
-          <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
-            <Calendar
-              highlightedDates={calendarDates}
-              onDateClick={(date) => {
-                const dateKey = format(date, "yyyy-MM-dd");
-                setSelectedDate(dateKey);
-                fetchDaySummary(dateKey);
-              }}
-              completedDays={calendarDates.reduce((acc, d) => {
-                acc[d] = true;
-                return acc;
-              }, {})}
-              onClose={() => setCalendarView(false)}
-              onSelectDate={handleCalendarDateSelect}
-            />
+          <div className="absolute top-0 left-0 right-0 bottom-[60px] z-60 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+            <div className="relative w-full max-w-md max-h-[90vh] overflow-auto">
+              <Calendar
+                highlightedDates={calendarDates}
+                onDateClick={(date) => {
+                  const dateKey = format(date, "yyyy-MM-dd");
+                  setSelectedDate(dateKey);
+                  fetchDaySummary(dateKey);
+                }}
+                completedDays={calendarDates.reduce((acc, d) => {
+                  acc[d] = true;
+                  return acc;
+                }, {})}
+                onClose={() => setCalendarView(false)}
+                onSelectDate={handleCalendarDateSelect}
+              />
+            </div>
           </div>
         )}
 
         {selectedDate && dailySummary && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-2xl shadow-lg p-6 w-96">
+          <div className=" flex items-center justify-center bg-black bg-opacity-40">
+            <div
+              ref={summaryInnerRef}
+              className="bg-white overflow-auto rounded-2xl shadow-lg p-6 w-96"
+            >
               <h2 className="text-xl font-bold mb-4">
                 Summary for {selectedDate}
               </h2>
@@ -741,7 +757,7 @@ export default function Dashboard() {
           <>
             {/* Workout Tab */}
             {activeTab === "workout" && (
-              <div className="pt-0 pb-38">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+74px)]">
                 <>
                   {/* Main Dashboard / Workouts */}
                   {!calendarView && !calendarDetails && (
@@ -894,57 +910,96 @@ export default function Dashboard() {
 
             {/* Diet Tab */}
             {activeTab === "diet" && userId && (
-              <div className="pt-0 pb-34">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-1 pb-[calc(env(safe-area-inset-bottom)+60px)]">
                 <DietDashboard userId={userId} />
               </div>
             )}
 
             {activeTab === "progress" && (
-              <div className="text-center text-gray-500 mt-0 pt-0 pb-34">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+60px)]">
                 <ProgressTab userId={userId} />
               </div>
             )}
 
             {activeTab === "explore" && (
-              <div className="pt-0 pb-38">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+79px)]">
                 <ExploreTab />
-              </div>
-            )}
-
-            {/* Chat Tab */}
-            {activeTab === "chat" && (
-              <div className="pt-0 pb-20">
-                {!selectedChatUser ? (
-                  user?.email === COACH_EMAIL ? (
-                    <AdminInbox
-                      db={db}
-                      coachId={user.email}
-                      onSelectUser={setSelectedChatUser}
-                    />
-                  ) : (
-                    <UserInbox
-                      db={db}
-                      userId={user?.uid}
-                      coachId={COACH_EMAIL}
-                      onSelectUser={setSelectedChatUser}
-                    />
-                  )
-                ) : (
-                  <AdminChatWindow
-                    db={db}
-                    chatId={selectedChatUser.chatId}
-                    senderId={user.uid}
-                    user={selectedChatUser}
-                    onBack={() => setSelectedChatUser(null)}
-                  />
-                )}
               </div>
             )}
           </>
         )}
       </div>
+      {/* ---------- Floating Chat ---------- */}
 
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div
+        ref={chatRef}
+        style={{
+          position: "fixed",
+          left: pos.x,
+          top: pos.y,
+          zIndex: 50,
+          touchAction: "none", // prevent page scrolling while dragging
+        }}
+      >
+        {isChatOpen && (
+          <div className="w-70 h-96 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden mb-2">
+            {/* DRAG HANDLE */}
+            <div
+              ref={dragHandleRef}
+              className="bg-cyan-600 text-white px-4 py-2 flex justify-between items-center cursor-grab"
+              onMouseDown={(e) => e.stopPropagation()} // stop drag from affecting inner scroll
+            >
+              <span>Ask the Coach</span>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="font-bold text-lg"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Chat content */}
+            <div className="flex-1 overflow-y-auto">
+              {!selectedChatUser ? (
+                user?.email === COACH_EMAIL ? (
+                  <AdminInbox
+                    db={db}
+                    coachId={user.email}
+                    onSelectUser={setSelectedChatUser}
+                  />
+                ) : (
+                  <UserInbox
+                    db={db}
+                    userId={user?.uid}
+                    coachId={COACH_EMAIL}
+                    onSelectUser={setSelectedChatUser}
+                  />
+                )
+              ) : (
+                <AdminChatWindow
+                  db={db}
+                  chatId={selectedChatUser.chatId}
+                  senderId={user.uid}
+                  user={selectedChatUser}
+                  onBack={() => setSelectedChatUser(null)}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Floating button */}
+        <button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          className="w-14 h-14 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+        >
+          💬
+        </button>
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white shadow-md">
+        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
     </div>
   );
 }

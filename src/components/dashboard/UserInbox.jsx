@@ -52,7 +52,7 @@ export default function UserInbox({ db, userId, coachId }) {
 
   return (
     // ✅ Remove any padding — full screen chat
-    <div className="w-full h-full px-4 pt-18 pb-8 m-0">
+    <div className="w-full h-full pb-0 m-0">
       <ChatWindow db={db} chatId={chatId} senderId={userId} />
     </div>
   );

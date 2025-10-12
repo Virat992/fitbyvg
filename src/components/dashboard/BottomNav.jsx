@@ -8,11 +8,10 @@ export default function BottomNav({ activeTab, setActiveTab }) {
     { id: "diet", label: "Diet", icon: UtensilsCrossed },
     { id: "progress", label: "Progress", icon: PieChart },
     { id: "explore", label: "Explore", icon: Globe },
-    { id: "chat", label: "Chat", icon: MessageSquare },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 sm:py-3 shadow-xl rounded-t-2xl z-50">
+    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 sm:py-3 shadow-xl rounded-t-2xl z-60">
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}

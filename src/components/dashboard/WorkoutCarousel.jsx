@@ -6,7 +6,7 @@ export default function WorkoutCarousel({
 }) {
   return (
     <div className="mb-0 pt-5 pb-0 w-full max-w-md mx-auto overflow-visible">
-      <h3 className="text-[22px] font-bold text-gray-800 mb-2">{title}</h3>
+      <h3 className="text-[16px] font-bold text-gray-800 mb-2">{title}</h3>
 
       <div className="flex gap-4 pl-0 px-0 -mb-4 overflow-x-auto overflow-y-hidden pb-0 scrollbar-hide">
         {programs.map((program, index) => (

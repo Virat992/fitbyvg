@@ -598,7 +598,7 @@ export default function DietDashboard({ userId }) {
     <div className="py-4 max-w-xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-[22px] font-bold text-gray-800">Today</h2>
+        <h2 className="text-[20px] font-bold text-gray-800">Today</h2>
       </div>
 
       {/* Cards */}
