@@ -546,213 +546,6 @@ export default function Dashboard() {
       </div>
 
       <div className="flex-1 max-h-[80vh] px-5 pb-15 py-0 relative overflow-auto">
-        {calendarView && (
-          <div className="absolute top-0 left-0 right-0 bottom-[60px] z-60 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-            <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-            <div className="relative w-full max-w-md max-h-[90vh] overflow-auto">
-              <Calendar
-                highlightedDates={calendarDates}
-                onDateClick={(date) => {
-                  const dateKey = format(date, "yyyy-MM-dd");
-                  setSelectedDate(dateKey);
-                  fetchDaySummary(dateKey);
-                }}
-                completedDays={calendarDates.reduce((acc, d) => {
-                  acc[d] = true;
-                  return acc;
-                }, {})}
-                onClose={() => setCalendarView(false)}
-                onSelectDate={handleCalendarDateSelect}
-              />
-            </div>
-          </div>
-        )}
-
-        {selectedDate && dailySummary && (
-          <div className=" flex items-center justify-center bg-black bg-opacity-40">
-            <div
-              ref={summaryInnerRef}
-              className="bg-white overflow-auto rounded-2xl shadow-lg p-6 w-96"
-            >
-              <h2 className="text-xl font-bold mb-4">
-                Summary for {selectedDate}
-              </h2>
-
-              {/* Workout Section */}
-              {dailySummary.workouts ? (
-                <div className="mb-4">
-                  <h3 className="font-semibold">Workout</h3>
-                  <p>{dailySummary.workouts.name || "Workout logged"}</p>
-                </div>
-              ) : (
-                <p className="text-gray-500">No workout logged</p>
-              )}
-
-              {/* Meals Section */}
-              {dailySummary.meals ? (
-                <div>
-                  <h3 className="font-semibold">Meals</h3>
-                  <p>
-                    Calories: {dailySummary.meals.consumedCalories} /{" "}
-                    {dailySummary.meals.dailyLimit}
-                  </p>
-                  <ul className="list-disc list-inside">
-                    {dailySummary.meals.meals?.map((meal, idx) => (
-                      <li key={idx}>
-                        {meal.name} ({meal.unit}) - {meal.calories} cal
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <p className="text-gray-500">No meals logged</p>
-              )}
-
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-lg"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Calendar Details */}
-        {calendarDetails && (
-          <div className="bg-white rounded-2xl p-5 mt-5 shadow-lg">
-            <div className="flex justify-start mb-2">
-              <button
-                onClick={() => {
-                  setCalendarDetails(null);
-                  setCalendarView(true);
-                }}
-                className="text-cyan-600 font-medium"
-              >
-                Back to Calendar
-              </button>
-            </div>
-            <div className="text-sm text-gray-600 font-medium mb-3">
-              Summary — {calendarDetails.date}
-            </div>
-
-            {/* Workouts */}
-            {calendarDetails.workouts?.length > 0 ? (
-              calendarDetails.workouts.map((item, idx) => (
-                <div
-                  key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
-                  className="mb-4"
-                >
-                  <h4 className="font-semibold mb-1">{item.workoutName}</h4>
-                  <p className="text-xs text-gray-500 mb-1">
-                    Week: {item.week}, Day: {item.day}
-                  </p>
-                  <ul className="list-disc list-inside text-sm text-gray-800">
-                    {item.exercises.map((ex) => (
-                      <li key={ex.id} className="mb-1">
-                        {ex.name}
-                        {ex.done ? (
-                          <span className="ml-2 text-green-600">✓</span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">No workouts logged.</p>
-            )}
-
-            {/* Diet */}
-            {calendarDetails.meals ? (
-              <div className="mt-6 p-4 border rounded-lg bg-gray-50 space-y-4">
-                <h4 className="font-semibold text-lg mb-2">🍽 Meals</h4>
-
-                {/* Summary */}
-                <div className="p-3 bg-white rounded-lg shadow-sm space-y-1">
-                  <p className="text-sm text-gray-700">
-                    Daily Calories:{" "}
-                    <span
-                      className={
-                        calendarDetails.meals.calories <=
-                        (calendarDetails.meals.dailyLimit || 0)
-                          ? "text-green-600 font-semibold"
-                          : "text-red-600 font-semibold"
-                      }
-                    >
-                      {calendarDetails.meals.calories} /{" "}
-                      {calendarDetails.meals.dailyLimit || 0} kcal
-                    </span>
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {calendarDetails.meals.calories <=
-                    (calendarDetails.meals.dailyLimit || 0)
-                      ? `You have ${
-                          (calendarDetails.meals.dailyLimit || 0) -
-                          calendarDetails.meals.calories
-                        } kcal remaining`
-                      : `You exceeded by ${
-                          calendarDetails.meals.calories -
-                          (calendarDetails.meals.dailyLimit || 0)
-                        } kcal`}
-                  </p>
-
-                  <p className="text-sm text-gray-700">
-                    Protein: {calendarDetails.meals.macros.protein || 0} g
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    Carbs: {calendarDetails.meals.macros.carbs || 0} g
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    Fats: {calendarDetails.meals.macros.fat || 0} g
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {calendarDetails.meals.calories <=
-                    (calendarDetails.meals.dailyLimit || 0)
-                      ? `You have ${
-                          (calendarDetails.meals.dailyLimit || 0) -
-                          calendarDetails.meals.calories
-                        } kcal remaining`
-                      : `You exceeded by ${
-                          calendarDetails.meals.calories -
-                          (calendarDetails.meals.dailyLimit || 0)
-                        } kcal`}
-                  </p>
-                </div>
-
-                {/* Meals */}
-                {calendarDetails.meals.list.map((meal, i) => (
-                  <div
-                    key={i}
-                    className="p-3 bg-white rounded-lg shadow-sm space-y-1"
-                  >
-                    <h5 className="font-medium text-gray-800">
-                      Meal {i + 1} — {meal.calories} kcal
-                    </h5>
-
-                    {/* Items inside each meal */}
-                    {meal.items?.length > 0 ? (
-                      <ul className="list-disc list-inside text-sm mt-2 space-y-1">
-                        {meal.items.map((item, idx) => (
-                          <li key={idx}>
-                            {item.name} - {item.calories} cal (
-                            {item.protein || 0}P/{item.carbs || 0}C/
-                            {item.fat || 0}F) | {item.quantity} x {item.unit}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm text-gray-500">No items logged</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 mt-4">No meals logged.</p>
-            )}
-          </div>
-        )}
-
         {!calendarView && !selectedDate && !calendarDetails && (
           <>
             {/* Workout Tab */}
@@ -929,8 +722,209 @@ export default function Dashboard() {
           </>
         )}
       </div>
-      {/* ---------- Floating Chat ---------- */}
 
+      {calendarView && (
+        <div className="fixed inset-0 z-60 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="relative p-5 w-full max-w-md max-h-[90vh] overflow-auto">
+            <Calendar
+              highlightedDates={calendarDates}
+              onDateClick={(date) => {
+                const dateKey = format(date, "yyyy-MM-dd");
+                setSelectedDate(dateKey);
+                fetchDaySummary(dateKey);
+              }}
+              completedDays={calendarDates.reduce((acc, d) => {
+                acc[d] = true;
+                return acc;
+              }, {})}
+              onClose={() => setCalendarView(false)}
+              onSelectDate={handleCalendarDateSelect}
+            />
+          </div>
+        </div>
+      )}
+
+      {selectedDate && dailySummary && (
+        <div className="fixed inset-0 z-50 overflow-auto bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-auto my-8 flex flex-col max-h-[90vh] overflow-hidden">
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              <h2 className="text-xl font-bold">Summary for {selectedDate}</h2>
+
+              {/* Workout Section */}
+              {dailySummary.workouts ? (
+                <div>
+                  <h3 className="font-semibold">Workout</h3>
+                  <p>{dailySummary.workouts.name || "Workout logged"}</p>
+                </div>
+              ) : (
+                <p className="text-gray-500">No workout logged</p>
+              )}
+
+              {/* Meals Section */}
+              {dailySummary.meals ? (
+                <div>
+                  <h3 className="font-semibold">Meals</h3>
+                  <p>
+                    Calories: {dailySummary.meals.consumedCalories || 0} /{" "}
+                    {dailySummary.meals.dailyLimit || 0}
+                  </p>
+                  <ul className="list-disc list-inside">
+                    {dailySummary.meals.meals?.map((meal, idx) => (
+                      <li key={idx}>
+                        {meal.name} ({meal.unit}) - {meal.calories} cal
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-gray-500">No meals logged</p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t flex justify-end">
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Calendar Details */}
+      {calendarDetails && (
+        <div className="fixed inset-0 z-50 overflow-auto bg-black/30 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-auto my-8 flex flex-col max-h-[70vh] overflow-hidden">
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+              {/* Back button */}
+              <div className="flex justify-start mb-2">
+                <button
+                  onClick={() => {
+                    setCalendarDetails(null);
+                    setCalendarView(true);
+                  }}
+                  className="text-cyan-600 font-medium"
+                >
+                  Back to Calendar
+                </button>
+              </div>
+
+              <div className="text-sm text-gray-600 font-medium mb-3">
+                Summary — {calendarDetails.date}
+              </div>
+
+              {/* Workouts */}
+              {calendarDetails.workouts?.length > 0 ? (
+                calendarDetails.workouts.map((item, idx) => (
+                  <div
+                    key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
+                    className="mb-4"
+                  >
+                    <h4 className="font-semibold mb-1">{item.workoutName}</h4>
+                    <p className="text-xs text-gray-500 mb-1">
+                      Week: {item.week}, Day: {item.day}
+                    </p>
+                    <ul className="list-disc list-inside text-sm text-gray-800">
+                      {item.exercises.map((ex) => (
+                        <li key={ex.id} className="mb-1">
+                          {ex.name}
+                          {ex.done && (
+                            <span className="ml-2 text-green-600">✓</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">No workouts logged.</p>
+              )}
+
+              {/* Meals */}
+              {calendarDetails.meals ? (
+                <div className="mt-4 p-4 border rounded-lg bg-gray-50 space-y-4">
+                  <h4 className="font-semibold text-lg mb-2">🍽 Meals</h4>
+
+                  {/* Summary */}
+                  <div className="p-3 bg-white rounded-lg shadow-sm space-y-1">
+                    <p className="text-sm text-gray-700">
+                      Daily Calories:{" "}
+                      <span
+                        className={
+                          calendarDetails.meals.calories <=
+                          (calendarDetails.meals.dailyLimit || 0)
+                            ? "text-green-600 font-semibold"
+                            : "text-red-600 font-semibold"
+                        }
+                      >
+                        {calendarDetails.meals.calories} /{" "}
+                        {calendarDetails.meals.dailyLimit || 0} kcal
+                      </span>
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Protein: {calendarDetails.meals.macros.protein || 0} g
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Carbs: {calendarDetails.meals.macros.carbs || 0} g
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Fats: {calendarDetails.meals.macros.fat || 0} g
+                    </p>
+                  </div>
+
+                  {/* Meals List */}
+                  {calendarDetails.meals.list.map((meal, i) => (
+                    <div
+                      key={i}
+                      className="p-3 bg-white rounded-lg shadow-sm space-y-1"
+                    >
+                      <h5 className="font-medium text-gray-800">
+                        Meal {i + 1} — {meal.calories} kcal
+                      </h5>
+                      {meal.items?.length > 0 ? (
+                        <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                          {meal.items.map((item, idx) => (
+                            <li key={idx}>
+                              {item.name} - {item.calories} cal (
+                              {item.protein || 0}P/
+                              {item.carbs || 0}C/{item.fat || 0}F) |{" "}
+                              {item.quantity} x {item.unit}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-gray-500">No items logged</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 mt-4">No meals logged.</p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4  flex justify-end">
+              <button
+                onClick={() => {
+                  setCalendarDetails(null); // close details modal
+                  setCalendarView(true); // go back to calendar
+                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------- Floating Chat ---------- */}
       <div
         ref={chatRef}
         style={{
