@@ -7,16 +7,16 @@ export default function LandingPage() {
 
   const cards = [
     {
-      img: "/Images/value-prop-1.png",
-      text: "Ready for some wins?\nStart tracking, it's easy",
+      img: "https://plus.unsplash.com/premium_photo-1661580254001-234e9e1c0f6a?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170https://plus.unsplash.com/premium_photo-1725576700786-23d683d8c53c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8cGVyc29uYWxpc2VkJTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=600",
+      text: "Workouts tailored to your goals.",
     },
     {
-      img: "/Images/value-prop-2.png",
-      text: "Discover the impact of\nyour food and fitness",
+      img: "/Images/landingpage-2.jpeg",
+      text: "Log meals and track calories and macros in seconds",
     },
     {
-      img: "/Images/value-prop-3.png",
-      text: "And make mindful eating\na habit of life",
+      img: "/Images/landingpage-3.jpg",
+      text: "See your daily progress and stay motivated to improve",
     },
   ];
 
