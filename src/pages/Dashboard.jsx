@@ -709,13 +709,13 @@ export default function Dashboard() {
             )}
 
             {activeTab === "progress" && (
-              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+60px)]">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+55px)]">
                 <ProgressTab userId={userId} />
               </div>
             )}
 
             {activeTab === "explore" && (
-              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+79px)]">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+74px)]">
                 <ExploreTab />
               </div>
             )}

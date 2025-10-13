@@ -119,54 +119,36 @@ export default function ProgressTab({ userId }) {
     }
   };
 
-  // ✅ Filter data with cleanup (remove zeros, duplicates, sort)
+  // ✅ Filter data
   const getFilteredData = (data, type) => {
     const now = new Date();
-    let startDate;
-    switch (filter) {
-      case "weekly":
-        startDate = new Date();
-        startDate.setDate(now.getDate() - 7);
-        break;
-      case "monthly":
-        startDate = new Date();
-        startDate.setMonth(now.getMonth() - 1);
-        break;
-      case "quarterly":
-        startDate = new Date();
-        startDate.setMonth(now.getMonth() - 3);
-        break;
-      default:
-        startDate = new Date();
-    }
+    let startDate = new Date();
 
-    // Clean and filter
+    if (filter === "weekly") startDate.setDate(now.getDate() - 7);
+    else if (filter === "monthly") startDate.setMonth(now.getMonth() - 1);
+    else if (filter === "quarterly") startDate.setMonth(now.getMonth() - 3);
+
     const cleaned = data
       .filter((d) => {
         const entryDate = new Date(d.date);
         if (isNaN(entryDate)) return false;
         if (entryDate < startDate) return false;
-
-        if (type === "calories") {
-          return (
-            (d.consumedCalories && d.consumedCalories > 0) ||
-            (d.targetCalories && d.targetCalories > 0)
-          );
-        } else if (type === "weight") {
-          return d.weight && d.weight > 0;
-        }
+        if (type === "calories")
+          return d.consumedCalories > 0 || d.targetCalories > 0;
+        if (type === "weight") return d.weight > 0;
         return true;
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Remove duplicate dates
-    const uniqueByDate = cleaned.reduce((acc, curr) => {
-      const key = new Date(curr.date).toDateString();
-      acc[key] = curr;
-      return acc;
-    }, {});
+    // Remove duplicates by date
+    const unique = Object.values(
+      cleaned.reduce((acc, curr) => {
+        acc[new Date(curr.date).toDateString()] = curr;
+        return acc;
+      }, {})
+    );
 
-    return Object.values(uniqueByDate);
+    return unique;
   };
 
   const filteredCalories = getFilteredData(caloriesData, "calories").map(
@@ -175,6 +157,7 @@ export default function ProgressTab({ userId }) {
       date: formatDate(d.date),
     })
   );
+
   const filteredWeightLogs = getFilteredData(weightLogs, "weight").map((d) => ({
     ...d,
     date: formatDate(d.date),
@@ -185,17 +168,17 @@ export default function ProgressTab({ userId }) {
   const getChartWidth = (data) => Math.max(data.length * 60, 500);
 
   return (
-    <div className="space-y-10 pt-5 pb-5 px-0">
+    <div className="space-y-10 pt-5 pb-5">
       <h1 className="text-[18px] font-bold text-gray-800 mb-4 text-start">
         Progress Overview
       </h1>
 
       {/* Filter Buttons */}
-      <div className="flex flex-wrap gap-3 mb-6 justify-start">
+      <div className="flex gap-3 mb-6">
         {["weekly", "monthly", "quarterly"].map((f) => (
           <button
             key={f}
-            className={`px-4 py-2 rounded-lg text-[13px] font-medium transition-colors duration-200 ${
+            className={`px-4 py-2 rounded-lg text-[13px] font-medium transition-colors ${
               filter === f
                 ? "bg-blue-600 text-white shadow"
                 : "bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -207,89 +190,43 @@ export default function ProgressTab({ userId }) {
         ))}
       </div>
 
-      {/* Calories Chart */}
+      {/* ✅ Calories Chart */}
       <div className={chartContainer}>
         <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
           Calories Intake
         </h2>
         {filteredCalories.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto pb-0">
             <div style={{ width: `${getChartWidth(filteredCalories)}px` }}>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={filteredCalories}>
-                  <CartesianGrid vertical={false} stroke="none" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12, fill: "#374151" }}
-                    tickLine={false}
-                    interval={0}
-                    angle={-45}
-                    textAnchor="end"
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: "#374151" }}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 8,
-                      border: "none",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                    }}
-                    cursor={{ fill: "rgba(59,130,246,0.1)" }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    align="center"
-                    iconType="circle"
-                    wrapperStyle={{ marginTop: 15, paddingBottom: 10 }}
-                  />
-                  <defs>
-                    <linearGradient
-                      id="targetGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#93c5fd" stopOpacity={0.8} />
-                      <stop
-                        offset="100%"
-                        stopColor="#3b82f6"
-                        stopOpacity={0.8}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="consumedGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8} />
-                      <stop
-                        offset="100%"
-                        stopColor="#1e40af"
-                        stopOpacity={0.8}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <Bar
-                    dataKey="targetCalories"
-                    name="Target"
-                    fill="url(#targetGradient)"
-                    radius={[10, 10, 0, 0]}
-                    stroke="none"
-                  />
-                  <Bar
-                    dataKey="consumedCalories"
-                    name="Consumed"
-                    fill="url(#consumedGradient)"
-                    radius={[10, 10, 0, 0]}
-                    stroke="none"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {filteredCalories.length > 0 && (
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={filteredCalories} barSize={16}>
+                    <CartesianGrid vertical={false} stroke="none" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      interval={0}
+                      angle={0}
+                      textAnchor="end"
+                      height={50}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} tickLine={false} />
+                    <Tooltip />
+                    <Legend verticalAlign="bottom" align="center" />
+                    <Bar
+                      dataKey="targetCalories"
+                      name="Target"
+                      fill="#93c5fd"
+                    />
+                    <Bar
+                      dataKey="consumedCalories"
+                      name="Consumed"
+                      fill="#2563eb"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         ) : (
@@ -299,58 +236,28 @@ export default function ProgressTab({ userId }) {
         )}
       </div>
 
-      {/* Macros Chart */}
+      {/* ✅ Macros Chart */}
       <div className={chartContainer}>
         <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
           Macros (g)
         </h2>
         {filteredCalories.length > 0 ? (
-          <div className="overflow-x-auto py-2">
+          <div className="overflow-x-auto pb-0">
             <div style={{ width: `${getChartWidth(filteredCalories)}px` }}>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={filteredCalories}>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={filteredCalories} barSize={16}>
                   <CartesianGrid vertical={false} stroke="none" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12, fill: "#374151" }}
-                    tickLine={false}
-                    interval={0}
-                    angle={-45}
-                    textAnchor="end"
+                    tick={{ fontSize: 10 }}
+                    angle={0}
+                    height={50}
                   />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: "#374151" }}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 8,
-                      border: "none",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                    }}
-                    cursor={{ fill: "rgba(59,130,246,0.1)" }}
-                  />
-                  <Bar
-                    dataKey="carbs"
-                    name="Carbs"
-                    fill="#f87171"
-                    radius={[10, 10, 0, 0]}
-                    stroke="none"
-                  />
-                  <Bar
-                    dataKey="protein"
-                    name="Protein"
-                    fill="#34d399"
-                    radius={[10, 10, 0, 0]}
-                    stroke="none"
-                  />
-                  <Bar
-                    dataKey="fat"
-                    name="Fat"
-                    fill="#facc15"
-                    radius={[10, 10, 0, 0]}
-                    stroke="none"
-                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Bar dataKey="carbs" name="Carbs" fill="#f87171" />
+                  <Bar dataKey="protein" name="Protein" fill="#34d399" />
+                  <Bar dataKey="fat" name="Fat" fill="#facc15" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -362,9 +269,9 @@ export default function ProgressTab({ userId }) {
         )}
       </div>
 
-      {/* Weight Chart */}
+      {/* ✅ Weight Chart */}
       <div className={chartContainer}>
-        <div className="flex flex-wrap gap-2 items-center justify-between mb-4">
+        <div className="flex flex-wrap justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Weight Logs</h2>
           <div className="flex flex-wrap gap-2 items-center">
             <input
@@ -382,13 +289,13 @@ export default function ProgressTab({ userId }) {
             />
             <button
               onClick={handleAddWeight}
-              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+              className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
             >
               Add
             </button>
             <button
               onClick={() => setShowLogPanel(!showLogPanel)}
-              className="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 text-sm"
+              className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm"
             >
               {showLogPanel ? "Close Log" : "Open Log"}
             </button>
@@ -396,47 +303,27 @@ export default function ProgressTab({ userId }) {
         </div>
 
         {filteredWeightLogs.length > 0 ? (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto pb-0">
             <div style={{ width: `${getChartWidth(filteredWeightLogs)}px` }}>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={filteredWeightLogs}>
                   <CartesianGrid vertical={false} stroke="none" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12, fill: "#374151" }}
-                    tickLine={false}
-                    interval={0}
-                    angle={-45}
-                    textAnchor="end"
+                    tick={{ fontSize: 12 }}
+                    angle={0}
+                    height={50}
                   />
-                  <YAxis
-                    tick={{ fontSize: 12, fill: "#374151" }}
-                    tickLine={false}
-                    domain={[40, 150]}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 8,
-                      border: "none",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                    }}
-                    cursor={{ stroke: "#3b82f6", strokeWidth: 2 }}
-                  />
+                  <YAxis tick={{ fontSize: 12 }} domain={[40, 150]} />
+                  <Tooltip />
                   <Line
                     type="monotone"
                     dataKey="weight"
-                    name="Weight"
                     stroke="#2563eb"
-                    strokeWidth={3}
-                    dot={{ r: 5, fill: "#2563eb", stroke: "none" }}
-                    activeDot={{ r: 7, fill: "#1e40af", stroke: "none" }}
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: "#2563eb" }}
                   >
-                    <LabelList
-                      dataKey="weight"
-                      position="top"
-                      fontSize={12}
-                      fill="#2563eb"
-                    />
+                    <LabelList dataKey="weight" position="top" fontSize={12} />
                   </Line>
                 </LineChart>
               </ResponsiveContainer>
