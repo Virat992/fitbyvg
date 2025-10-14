@@ -539,9 +539,24 @@ export default function Dashboard() {
           />
         )}
 
-        <div className="bg-white text-[14px] text-center py-1 text-gray-700 font-semibold shadow-sm">
-          Welcome,{" "}
-          {userName || auth.currentUser?.displayName || auth.currentUser?.email}
+        <div
+          className="
+    bg-white 
+    text-[14px] md:text-[16px] 
+    text-center 
+    py-1.5 md:py-2 
+    text-gray-700 
+    font-semibold 
+    shadow-sm 
+    tracking-wide
+  "
+        >
+          Welcome,&nbsp;
+          <span className="text-cyan-700">
+            {userName ||
+              auth.currentUser?.displayName ||
+              auth.currentUser?.email}
+          </span>
         </div>
       </div>
 
@@ -797,10 +812,10 @@ export default function Dashboard() {
 
       {/* Calendar Details */}
       {calendarDetails && (
-        <div className="fixed inset-0 z-50 overflow-auto bg-black/30 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-auto my-8 flex flex-col max-h-[70vh] overflow-hidden">
+        <div className="fixed inset-0 z-50 overflow-auto bg-black/30 backdrop-blur-sm p-4 md:p-8">
+          <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg mx-auto my-8 flex flex-col max-h-[75vh] overflow-hidden">
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-5 md:px-8 py-4 md:py-6 space-y-4">
               {/* Back button */}
               <div className="flex justify-start mb-2">
                 <button
@@ -808,13 +823,13 @@ export default function Dashboard() {
                     setCalendarDetails(null);
                     setCalendarView(true);
                   }}
-                  className="text-cyan-600 font-medium"
+                  className="text-cyan-600 font-medium text-sm md:text-base"
                 >
                   Back to Calendar
                 </button>
               </div>
 
-              <div className="text-sm text-gray-600 font-medium mb-3">
+              <div className="text-sm md:text-base text-gray-600 font-medium mb-3">
                 Summary — {calendarDetails.date}
               </div>
 
@@ -825,11 +840,13 @@ export default function Dashboard() {
                     key={`${item.workoutDb}_${item.week}_${item.day}_${idx}`}
                     className="mb-4"
                   >
-                    <h4 className="font-semibold mb-1">{item.workoutName}</h4>
-                    <p className="text-xs text-gray-500 mb-1">
+                    <h4 className="font-semibold text-base md:text-lg mb-1">
+                      {item.workoutName}
+                    </h4>
+                    <p className="text-xs md:text-sm text-gray-500 mb-1">
                       Week: {item.week}, Day: {item.day}
                     </p>
-                    <ul className="list-disc list-inside text-sm text-gray-800">
+                    <ul className="list-disc list-inside text-sm md:text-base text-gray-800">
                       {item.exercises.map((ex) => (
                         <li key={ex.id} className="mb-1">
                           {ex.name}
@@ -842,17 +859,21 @@ export default function Dashboard() {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500">No workouts logged.</p>
+                <p className="text-gray-500 text-sm md:text-base">
+                  No workouts logged.
+                </p>
               )}
 
               {/* Meals */}
               {calendarDetails.meals ? (
                 <div className="mt-4 p-4 border rounded-lg bg-gray-50 space-y-4">
-                  <h4 className="font-semibold text-lg mb-2">🍽 Meals</h4>
+                  <h4 className="font-semibold text-lg md:text-xl mb-2">
+                    🍽 Meals
+                  </h4>
 
                   {/* Summary */}
-                  <div className="p-3 bg-white rounded-lg shadow-sm space-y-1">
-                    <p className="text-sm text-gray-700">
+                  <div className="p-3 bg-white rounded-lg shadow-sm space-y-1 text-sm md:text-base">
+                    <p className="text-gray-700">
                       Daily Calories:{" "}
                       <span
                         className={
@@ -866,56 +887,53 @@ export default function Dashboard() {
                         {calendarDetails.meals.dailyLimit || 0} kcal
                       </span>
                     </p>
-                    <p className="text-sm text-gray-700">
+                    <p>
                       Protein: {calendarDetails.meals.macros.protein || 0} g
                     </p>
-                    <p className="text-sm text-gray-700">
-                      Carbs: {calendarDetails.meals.macros.carbs || 0} g
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Fats: {calendarDetails.meals.macros.fat || 0} g
-                    </p>
+                    <p>Carbs: {calendarDetails.meals.macros.carbs || 0} g</p>
+                    <p>Fats: {calendarDetails.meals.macros.fat || 0} g</p>
                   </div>
 
                   {/* Meals List */}
                   {calendarDetails.meals.list.map((meal, i) => (
                     <div
                       key={i}
-                      className="p-3 bg-white rounded-lg shadow-sm space-y-1"
+                      className="p-3 bg-white rounded-lg shadow-sm space-y-1 text-sm md:text-base"
                     >
                       <h5 className="font-medium text-gray-800">
                         Meal {i + 1} — {meal.calories} kcal
                       </h5>
                       {meal.items?.length > 0 ? (
-                        <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                        <ul className="list-disc list-inside mt-2 space-y-1">
                           {meal.items.map((item, idx) => (
                             <li key={idx}>
                               {item.name} - {item.calories} cal (
-                              {item.protein || 0}P/
-                              {item.carbs || 0}C/{item.fat || 0}F) |{" "}
-                              {item.quantity} x {item.unit}
+                              {item.protein || 0}P/{item.carbs || 0}C/
+                              {item.fat || 0}F) | {item.quantity} x {item.unit}
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-gray-500">No items logged</p>
+                        <p className="text-gray-500">No items logged</p>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 mt-4">No meals logged.</p>
+                <p className="text-gray-500 mt-4 text-sm md:text-base">
+                  No meals logged.
+                </p>
               )}
             </div>
 
             {/* Footer */}
-            <div className="p-4  flex justify-end">
+            <div className="p-4 md:p-6 flex justify-end">
               <button
                 onClick={() => {
-                  setCalendarDetails(null); // close details modal
-                  setCalendarView(true); // go back to calendar
+                  setCalendarDetails(null);
+                  setCalendarView(true);
                 }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                className="px-4 py-2 md:px-5 md:py-3 bg-blue-500 text-white rounded-lg text-sm md:text-base"
               >
                 Close
               </button>
@@ -936,17 +954,19 @@ export default function Dashboard() {
         }}
       >
         {isChatOpen && (
-          <div className="w-70 h-96 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden mb-2">
+          <div className="w-70 md:w-80 h-96 md:h-[26rem] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden mb-2">
             {/* DRAG HANDLE */}
             <div
               ref={dragHandleRef}
-              className="bg-cyan-600 text-white px-4 py-2 flex justify-between items-center cursor-grab"
+              className="bg-cyan-600 text-white px-4 md:px-6 py-2 md:py-3 flex justify-between items-center cursor-grab"
               onMouseDown={(e) => e.stopPropagation()} // stop drag from affecting inner scroll
             >
-              <span>Ask the Coach</span>
+              <span className="text-sm md:text-lg font-medium">
+                Ask the Coach
+              </span>
               <button
                 onClick={() => setIsChatOpen(false)}
-                className="font-bold text-lg"
+                className="font-bold text-lg md:text-xl"
               >
                 &times;
               </button>
@@ -985,7 +1005,7 @@ export default function Dashboard() {
         {/* Floating button */}
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="w-14 h-14 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
           💬
         </button>

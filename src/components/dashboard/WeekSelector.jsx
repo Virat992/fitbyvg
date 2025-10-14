@@ -4,15 +4,14 @@ export default function WeekSelector({
   getWeekStatus = () => "not-started",
   onSelectWeek = () => {},
   onBack = () => {},
-  isProgramStarted = false, // <-- receives state from parent
+  isProgramStarted = false, // receives state from parent
   goToDashboard, // optional callback to go to dashboard
 }) {
   return (
-    <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
+    <div className="bg-white mt-5 rounded-2xl shadow-lg p-4 md:p-5">
+      {/* Back Button */}
       <button
         onClick={() => {
-          // If the program is already started, use goToDashboard if provided,
-          // otherwise fall back to the regular onBack behavior.
           if (isProgramStarted) {
             if (typeof goToDashboard === "function") goToDashboard();
             else onBack();
@@ -20,16 +19,18 @@ export default function WeekSelector({
             onBack();
           }
         }}
-        className="flex items-center gap-2 text-cyan-600 font-medium mb-4"
+        className="flex items-center gap-2 text-cyan-600 font-medium mb-4 text-sm md:text-base"
       >
         Back
       </button>
 
-      <h2 className="text-xl flex justify-center font-bold mb-5">
+      {/* Title */}
+      <h2 className="text-xl md:text-2xl flex justify-center font-bold mb-5">
         Select a Week
       </h2>
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Weeks Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
         {weeks.map((week) => {
           const displayWeek = week.replace(/([a-zA-Z]+)(\d+)/, "$1 $2");
           const status = getWeekStatus(week);
@@ -42,7 +43,7 @@ export default function WeekSelector({
             <button
               key={week}
               onClick={() => onSelectWeek(week)}
-              className={`p-4 rounded-xl text-center font-semibold ${bgClass}`}
+              className={`p-3 md:p-4 rounded-xl text-center font-semibold text-sm md:text-base ${bgClass}`}
             >
               {displayWeek}
             </button>

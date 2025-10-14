@@ -7,7 +7,6 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Button from "../components/Button";
 import FormInput from "../components/FormInput";
-import AlertMessage from "../components/AlertMessage";
 import TermsCheckbox from "../components/TermsCheckbox";
 
 export default function Signup() {
@@ -33,7 +32,6 @@ export default function Signup() {
     e.preventDefault();
     setErrors({ email: "", password: "", rePassword: "", terms: "" });
 
-    // --- Validation (same as before) ---
     if (!email)
       return setErrors((prev) => ({ ...prev, email: "Email is required" }));
     if (!validateEmail(email))
@@ -66,8 +64,6 @@ export default function Signup() {
 
     try {
       setLoading(true);
-
-      // --- 1. Create user with email/password ---
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -75,7 +71,6 @@ export default function Signup() {
       );
       const user = userCredential.user;
 
-      // --- 2. Create Firestore doc using UID as ID ---
       await setDoc(doc(db, "users", user.uid), {
         email: user.email,
         createdAt: new Date(),
@@ -88,7 +83,6 @@ export default function Signup() {
         programStartDate: null,
       });
 
-      // --- 3. Navigate to onboarding ---
       navigate("/onboarding", { replace: true });
     } catch (err) {
       if (err.code === "auth/email-already-in-use") {
@@ -103,26 +97,26 @@ export default function Signup() {
 
   return (
     <div className="w-full min-h-screen bg-cyan-50 flex flex-col items-center">
-      <div className="w-full max-w-md mx-auto flex flex-col items-center">
+      <div className="w-full max-w-md md:max-w-lg mx-auto flex flex-col items-center">
         {/* Top Section */}
         <div
-          className="w-full h-50 flex items-center justify-center rounded-b-3xl relative 
+          className="w-full md:h-80 h-50 flex items-center justify-center rounded-b-3xl relative 
             bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-400 cursor-pointer"
           onClick={() => navigate("/")}
         >
-          {/* Optional design element or logo */}
           <p
-            className="text-[40px] -mt-15 font-bold text-white"
+            className="text-[40px] md:text-[52px] -mt-15 md:-mt-20 font-bold text-white"
             style={{ fontFamily: "'Roboto', cursive" }}
           >
-            FITBYVG<span className="align-super text-[20px]">™</span>
+            FITBYVG
+            <span className="align-super text-[20px] md:text-[28px]">™</span>
           </p>
         </div>
 
         {/* Signup Form Card */}
-        <div className="w-full bg-white shadow-lg rounded-3xl -mt-12 z-10 p-6 flex flex-col items-center">
+        <div className="w-full bg-white shadow-lg rounded-3xl -mt-12 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center">
           <div className="flex items-center justify-center relative w-full mb-4">
-            <p className="flex items-center gap-2 text-[20px] font-bold text-gray-800">
+            <p className="flex items-center gap-2 text-[20px] md:text-[24px] font-bold text-gray-800">
               Create Your Account
             </p>
           </div>
@@ -190,7 +184,7 @@ export default function Signup() {
                 onChange={setAcceptedTerms}
                 error={errors.terms}
                 label={
-                  <span className="text-center">
+                  <span className="text-center text-sm md:text-base">
                     I understood the{" "}
                     <span className="text-cyan-600 cursor-pointer">
                       terms and conditions
@@ -203,13 +197,13 @@ export default function Signup() {
             <Button
               type="submit"
               loading={loading}
-              className="w-full py-3 mt-8"
+              className="w-full py-3 mt-8 text-sm md:text-base md:py-4"
             >
               Sign Up
             </Button>
           </form>
 
-          <p className="mt-8 text-gray-700 text-sm text-center">
+          <p className="mt-8 text-gray-700 text-sm text-center md:text-base">
             Already have an account?{" "}
             <span
               className="text-cyan-600 font-semibold cursor-pointer"

@@ -74,7 +74,7 @@ export default function AddMealModal({ onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 p-4 flex justify-center items-center z-60">
+    <div className="fixed inset-0 p-4 flex justify-center items-center z-50">
       {/* Glass background behind modal */}
       <div className="absolute inset-0 bg-white/20 backdrop-blur-md"></div>
 

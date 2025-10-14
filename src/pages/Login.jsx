@@ -40,16 +40,14 @@ export default function Login() {
         email,
         password
       );
-      const user = userCredential.user; // ✅ get current signed-in user
+      const user = userCredential.user;
 
-      // ✅ Fetch user doc using UID
+      // ✅ Fetch user doc
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-
-        // ✅ Prevent redirect loop by checking current path
         if (userData.onboardingCompleted) {
           if (window.location.pathname !== "/dashboard") {
             navigate("/dashboard", { replace: true });
@@ -64,7 +62,6 @@ export default function Login() {
           }
         }
       } else {
-        // New user → onboarding
         if (window.location.pathname !== "/onboarding") {
           navigate("/onboarding", { state: { startStep: 0 }, replace: true });
         }
@@ -94,27 +91,28 @@ export default function Login() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-cyan-50 flex flex-col items-center">
-      <div className="w-full max-w-md mx-auto flex flex-col items-center">
+    <div className=" md:w-full  w-full min-h-screen bg-cyan-50 flex flex-col items-center">
+      <div className="w-full max-w-md md:max-w-lg mx-auto flex flex-col items-center">
         {/* Top Section */}
         <div
-          className="w-full h-50 flex items-center justify-center rounded-b-3xl relative 
+          className="w-full md:h-80 h-50 flex items-center justify-center rounded-b-3xl relative 
             bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-400 cursor-pointer"
           onClick={() => navigate("/")}
         >
           <p
-            className="text-[40px] -mt-15 font-bold text-white"
+            className="text-[40px] md:text-[52px] -mt-15 md:-mt-20 font-bold text-white"
             style={{ fontFamily: "'Roboto', cursive" }}
           >
-            FITBYVG<span className="align-super text-[20px]">™</span>
+            FITBYVG
+            <span className="align-super text-[20px] md:text-[28px]">™</span>
           </p>
         </div>
 
         {/* Login Form Card */}
-        <div className="w-full max-w-[420px] bg-white shadow-lg rounded-3xl -mt-10 z-10 p-6 flex flex-col items-center">
+        <div className="w-full bg-white shadow-lg rounded-3xl -mt-10 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center max-w-[420px] md:max-w-[600px]">
           {/* Header */}
           <div className="flex items-center justify-center relative w-full mb-4">
-            <p className="flex items-center gap-2 text-[20px] font-bold text-gray-800">
+            <p className="flex items-center gap-2 text-[20px] md:text-[24px] font-bold text-gray-800">
               Existing Member Login
             </p>
           </div>
@@ -167,19 +165,23 @@ export default function Login() {
               }
             />
 
-            <Button type="submit" loading={loading} className="w-full py-3">
+            <Button
+              type="submit"
+              loading={loading}
+              className="w-full py-3 text-sm md:text-base md:py-4"
+            >
               Log In
             </Button>
           </form>
 
           <p
-            className="text-cyan-600 font-bold text-sm mt-5 cursor-pointer hover:underline text-center"
+            className="text-cyan-600 font-bold text-sm md:text-base mt-5 cursor-pointer hover:underline text-center"
             onClick={() => alert("Forgot password functionality")}
           >
             Forgot password?
           </p>
 
-          <p className="mt-4 text-gray-700 text-sm text-center">
+          <p className="mt-4 text-gray-700 text-sm md:text-base text-center">
             Don’t have an account?{" "}
             <span
               className="text-cyan-600 font-semibold cursor-pointer"

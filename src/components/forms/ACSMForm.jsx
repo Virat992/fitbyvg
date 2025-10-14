@@ -63,57 +63,67 @@ export default function ACSMForm({ onNext, onBack }) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
-      {/* Header */}
-      <div className="px-4 pt-6 mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">
-          ACSM Risk Stratification
-        </h1>
-      </div>
+    <div className="w-full h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
+      <div className="w-full max-w-md md:max-w-lg mx-auto flex flex-col h-full">
+        {/* Header */}
+        <div className="px-4 md:px-6 pt-6 mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+            ACSM Risk Stratification
+          </h1>
+        </div>
 
-      {/* Scrollable Section */}
-      {!result ? (
-        <form className="flex-1 px-4 overflow-y-auto space-y-6 pb-4 scrollbar-hide">
-          {questions.map((q) => (
-            <div key={q.id} className="space-y-2">
-              <p className="font-medium text-gray-700">{q.text}</p>
-              <div className="flex gap-6">
-                {["yes", "no"].map((val) => (
-                  <label key={val} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name={q.id}
-                      value={val}
-                      onChange={() => handleChange(q.id, val)}
-                      required
-                    />
-                    {val === "yes" ? "Yes" : "No"}
-                  </label>
-                ))}
+        {/* Scrollable Section */}
+        {!result ? (
+          <form className="flex-1 px-4 md:px-6 overflow-y-auto space-y-6 pb-4 scrollbar-hide">
+            {questions.map((q) => (
+              <div key={q.id} className="space-y-2">
+                <p className="font-medium text-gray-700 md:text-lg">{q.text}</p>
+                <div className="flex gap-6 md:gap-8">
+                  {["yes", "no"].map((val) => (
+                    <label
+                      key={val}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name={q.id}
+                        value={val}
+                        onChange={() => handleChange(q.id, val)}
+                        required
+                        className="w-4 h-4 md:w-5 md:h-5"
+                      />
+                      <span className="capitalize md:text-base">{val}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </form>
-      ) : (
-        <div className="flex-1 flex flex-col justify-center items-center px-4">
-          <p className="text-lg font-semibold text-gray-700">
-            Your Risk Level:
-          </p>
-          <p className="text-2xl font-bold text-cyan-600 mt-2">{result}</p>
-          <p className="text-gray-500 mt-2">Redirecting to next step...</p>
-        </div>
-      )}
+            ))}
+          </form>
+        ) : (
+          <div className="flex-1 flex flex-col justify-center items-center px-4 md:px-6">
+            <p className="text-lg md:text-xl font-semibold text-gray-700">
+              Your Risk Level:
+            </p>
+            <p className="text-2xl md:text-3xl font-bold text-cyan-600 mt-2">
+              {result}
+            </p>
+            <p className="text-gray-500 mt-2 md:text-base">
+              Redirecting to next step...
+            </p>
+          </div>
+        )}
 
-      {/* Bottom Navigation */}
-      {!result && (
-        <div className="px-4 py-6 pb-16">
-          <BottomNavigation
-            onBack={onBack}
-            onNext={handleNext}
-            nextDisabled={Object.keys(answers).length !== questions.length}
-          />
-        </div>
-      )}
+        {/* Bottom Navigation */}
+        {!result && (
+          <div className="px-4 md:px-6 py-6 pb-16">
+            <BottomNavigation
+              onBack={onBack}
+              onNext={handleNext}
+              nextDisabled={Object.keys(answers).length !== questions.length}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

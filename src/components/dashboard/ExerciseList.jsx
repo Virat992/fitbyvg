@@ -42,15 +42,15 @@ export default function ExercisesList({
   };
 
   return (
-    <div className="bg-white mt-5 rounded-2xl shadow-lg p-5">
+    <div className="bg-white mt-5 rounded-2xl shadow-lg p-4 md:p-5">
       <button
         onClick={handleBack}
-        className="flex cursor-pointer items-center gap-2 text-cyan-600 font-medium mb-4"
+        className="flex cursor-pointer items-center gap-2 text-cyan-600 font-medium mb-4 text-sm md:text-base"
       >
         Back
       </button>
 
-      <h2 className="text-xl font-bold mb-4 capitalize">
+      <h2 className="text-xl md:text-2xl font-bold mb-4 capitalize">
         {selectedWorkout.name} - {selectedWeek} - {selectedDay}
       </h2>
 
@@ -58,10 +58,10 @@ export default function ExercisesList({
         {exercises.map((ex) => (
           <div
             key={ex.id}
-            className="border rounded-xl p-3 flex flex-col md:flex-row items-start gap-4"
+            className="border rounded-xl p-3 flex flex-col md:flex-row items-start gap-4 md:gap-6"
           >
             {/* Exercise Image */}
-            <div className="w-full md:w-40 h-40 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="w-full md:w-48 h-40 md:h-48 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
               <img
                 src={ex.imgurl}
                 alt={ex.name}
@@ -71,14 +71,14 @@ export default function ExercisesList({
 
             {/* Exercise Details */}
             <div className="flex-1 flex flex-col">
-              <h3 className="font-bold text-lg">{ex.name}</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-bold text-lg md:text-xl">{ex.name}</h3>
+              <p className="text-sm md:text-base text-gray-600">
                 {ex.sets} sets × {ex.reps}
               </p>
 
               {/* Instructions */}
               {ex.instructions && (
-                <div className="mt-2 max-h-24 overflow-y-auto p-2 border rounded-lg bg-gray-50 text-sm text-gray-700">
+                <div className="mt-2 max-h-28 md:max-h-32 overflow-y-auto p-2 border rounded-lg bg-gray-50 text-sm md:text-base text-gray-700">
                   {ex.instructions.split("\n").map((line, idx) => (
                     <p key={idx}>{line}</p>
                   ))}
@@ -86,7 +86,7 @@ export default function ExercisesList({
               )}
 
               {/* Mark Done */}
-              <label className="flex items-center mt-2">
+              <label className="flex items-center mt-2 text-sm md:text-base">
                 <input
                   type="checkbox"
                   checked={completedExercises[ex.id] || false}
@@ -108,11 +108,11 @@ export default function ExercisesList({
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
             placeholder="Write a note about today's workout..."
-            className="w-full border rounded-lg p-3 text-sm"
+            className="w-full border rounded-lg p-3 text-sm md:text-base"
             rows={3}
           />
         ) : notesHistory.length > 0 ? (
-          <div className="p-3 border rounded-lg bg-gray-100 text-sm text-gray-700">
+          <div className="p-3 border rounded-lg bg-gray-100 text-sm md:text-base text-gray-700 space-y-1">
             {notesHistory.map((n, i) => (
               <p key={i}>
                 {n.note} ({new Date(n.timestamp).toLocaleString()})
@@ -120,14 +120,14 @@ export default function ExercisesList({
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-sm italic">
+          <p className="text-gray-500 text-sm md:text-base italic">
             No notes were added for this workout.
           </p>
         )}
       </div>
 
       {/* Mark All Completed */}
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex items-center gap-2 text-sm md:text-base">
         <input
           type="checkbox"
           checked={allCompleted}
@@ -143,7 +143,7 @@ export default function ExercisesList({
           handleAddNote();
           handleSaveProgress();
         }}
-        className={`w-full py-3 font-bold rounded-2xl transition ${
+        className={`w-full py-3 md:py-4 font-bold rounded-2xl transition text-sm md:text-base ${
           isLocked
             ? "bg-green-500 text-white cursor-not-allowed"
             : "bg-cyan-600 text-white hover:bg-cyan-700"

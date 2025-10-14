@@ -23,7 +23,6 @@ import {
   LabelList,
 } from "recharts";
 
-// ✅ Date formatter
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -43,7 +42,6 @@ export default function ProgressTab({ userId }) {
   );
   const [showLogPanel, setShowLogPanel] = useState(false);
 
-  // ✅ Fetch calories data
   useEffect(() => {
     if (!userId) return;
     const mealsRef = collection(db, "users", userId, "meals");
@@ -68,7 +66,6 @@ export default function ProgressTab({ userId }) {
     return () => unsub();
   }, [userId]);
 
-  // ✅ Fetch weight logs
   useEffect(() => {
     if (!userId) return;
     const ref = collection(db, "users", userId, "progress_weightLogs");
@@ -87,7 +84,6 @@ export default function ProgressTab({ userId }) {
     return () => unsub();
   }, [userId]);
 
-  // ✅ Add / update weight
   const handleAddWeight = async () => {
     if (!newWeight || isNaN(newWeight)) return;
     try {
@@ -109,7 +105,6 @@ export default function ProgressTab({ userId }) {
     }
   };
 
-  // ✅ Delete weight
   const handleDeleteWeight = async (dateId) => {
     try {
       const weightRef = doc(db, "users", userId, "progress_weightLogs", dateId);
@@ -119,7 +114,6 @@ export default function ProgressTab({ userId }) {
     }
   };
 
-  // ✅ Filter data
   const getFilteredData = (data, type) => {
     const now = new Date();
     let startDate = new Date();
@@ -140,7 +134,6 @@ export default function ProgressTab({ userId }) {
       })
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // Remove duplicates by date
     const unique = Object.values(
       cleaned.reduce((acc, curr) => {
         acc[new Date(curr.date).toDateString()] = curr;
@@ -164,21 +157,22 @@ export default function ProgressTab({ userId }) {
   }));
 
   const chartContainer =
-    "bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition-shadow duration-300";
+    "bg-white shadow-lg rounded-2xl p-4 md:p-6 hover:shadow-xl transition-shadow duration-300";
   const getChartWidth = (data) => Math.max(data.length * 60, 500);
 
   return (
-    <div className="space-y-10 pt-5 pb-5">
-      <h1 className="text-[18px] font-bold text-gray-800 mb-4 text-start">
+    <div className="px-3 md:px-6 pt-4 pb-6 space-y-8 overflow-y-auto h-full">
+      {/* Title */}
+      <h1 className="text-lg md:text-xl font-bold text-gray-800">
         Progress Overview
       </h1>
 
       {/* Filter Buttons */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-2 md:gap-3 mb-4">
         {["weekly", "monthly", "quarterly"].map((f) => (
           <button
             key={f}
-            className={`px-4 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+            className={`px-3 md:px-4 py-1 md:py-2 rounded-lg text-[12px] md:text-[13px] font-medium transition-colors ${
               filter === f
                 ? "bg-blue-600 text-white shadow"
                 : "bg-gray-100 hover:bg-gray-200 text-gray-700"
@@ -190,43 +184,34 @@ export default function ProgressTab({ userId }) {
         ))}
       </div>
 
-      {/* ✅ Calories Chart */}
+      {/* Calories Chart */}
       <div className={chartContainer}>
-        <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
+        <h2 className="text-md md:text-lg font-semibold mb-3 text-gray-800 text-center">
           Calories Intake
         </h2>
         {filteredCalories.length > 0 ? (
-          <div className="overflow-x-auto pb-0">
+          <div className="overflow-x-auto">
             <div style={{ width: `${getChartWidth(filteredCalories)}px` }}>
-              {filteredCalories.length > 0 && (
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={filteredCalories} barSize={16}>
-                    <CartesianGrid vertical={false} stroke="none" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      tickLine={false}
-                      interval={0}
-                      angle={0}
-                      textAnchor="end"
-                      height={50}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} tickLine={false} />
-                    <Tooltip />
-                    <Legend verticalAlign="bottom" align="center" />
-                    <Bar
-                      dataKey="targetCalories"
-                      name="Target"
-                      fill="#93c5fd"
-                    />
-                    <Bar
-                      dataKey="consumedCalories"
-                      name="Consumed"
-                      fill="#2563eb"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={filteredCalories} barSize={16}>
+                  <CartesianGrid vertical={false} stroke="none" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 12 }}
+                    interval={0}
+                    height={40}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" align="center" />
+                  <Bar dataKey="targetCalories" name="Target" fill="#93c5fd" />
+                  <Bar
+                    dataKey="consumedCalories"
+                    name="Consumed"
+                    fill="#2563eb"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         ) : (
@@ -236,23 +221,18 @@ export default function ProgressTab({ userId }) {
         )}
       </div>
 
-      {/* ✅ Macros Chart */}
+      {/* Macros Chart */}
       <div className={chartContainer}>
-        <h2 className="text-xl font-semibold mb-6 text-gray-800 text-center">
+        <h2 className="text-md md:text-lg font-semibold mb-3 text-gray-800 text-center">
           Macros (g)
         </h2>
         {filteredCalories.length > 0 ? (
-          <div className="overflow-x-auto pb-0">
+          <div className="overflow-x-auto">
             <div style={{ width: `${getChartWidth(filteredCalories)}px` }}>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={filteredCalories} barSize={16}>
                   <CartesianGrid vertical={false} stroke="none" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 10 }}
-                    angle={0}
-                    height={50}
-                  />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} height={40} />
                   <YAxis tick={{ fontSize: 12 }} />
                   <Tooltip />
                   <Bar dataKey="carbs" name="Carbs" fill="#f87171" />
@@ -269,21 +249,23 @@ export default function ProgressTab({ userId }) {
         )}
       </div>
 
-      {/* ✅ Weight Chart */}
+      {/* Weight Chart */}
       <div className={chartContainer}>
-        <div className="flex flex-wrap justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Weight Logs</h2>
+        <div className="flex flex-wrap justify-between mb-3 gap-2 md:gap-3">
+          <h2 className="text-md md:text-lg font-semibold text-gray-800">
+            Weight Logs
+          </h2>
           <div className="flex flex-wrap gap-2 items-center">
             <input
               type="date"
-              className="border rounded px-3 py-1 text-sm"
+              className="border rounded px-2 md:px-3 py-1 text-sm"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
             <input
               type="number"
               placeholder="kg"
-              className="border rounded px-3 py-1 w-20 text-sm"
+              className="border rounded px-2 md:px-3 py-1 w-16 text-sm"
               value={newWeight}
               onChange={(e) => setNewWeight(e.target.value)}
             />
@@ -303,17 +285,12 @@ export default function ProgressTab({ userId }) {
         </div>
 
         {filteredWeightLogs.length > 0 ? (
-          <div className="overflow-x-auto pb-0">
+          <div className="overflow-x-auto">
             <div style={{ width: `${getChartWidth(filteredWeightLogs)}px` }}>
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={filteredWeightLogs}>
                   <CartesianGrid vertical={false} stroke="none" />
-                  <XAxis
-                    dataKey="date"
-                    tick={{ fontSize: 12 }}
-                    angle={0}
-                    height={50}
-                  />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} height={40} />
                   <YAxis tick={{ fontSize: 12 }} domain={[40, 150]} />
                   <Tooltip />
                   <Line
@@ -336,7 +313,7 @@ export default function ProgressTab({ userId }) {
         )}
 
         {showLogPanel && (
-          <div className="mt-4 border-t pt-3 flex flex-col gap-2 max-h-64 overflow-y-auto">
+          <div className="mt-3 border-t pt-2 flex flex-col gap-2 max-h-64 overflow-y-auto">
             {weightLogs
               .sort((a, b) => new Date(b.date) - new Date(a.date))
               .map((w) => (

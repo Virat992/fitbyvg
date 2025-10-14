@@ -58,36 +58,36 @@ export default function PhysicalInfo({ onNext, onBack }) {
 
   return (
     <div className="w-full h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
-      <div className="w-full max-w-md mx-auto flex flex-col h-full">
+      <div className="w-full max-w-md md:max-w-lg mx-auto flex flex-col h-full">
         {/* Header */}
-        <div className="px-4 pt-6 pb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">
+        <div className="px-4 md:px-6 pt-6 md:pt-8 pb-4 flex items-center justify-between">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
             Your Physical Stats
           </h1>
           <button
             onClick={handleLogout}
-            className="text-sm font-semibold text-cyan-600 cursor-pointer hover:font-bold"
+            className="text-sm sm:text-base md:text-lg font-semibold text-cyan-600 cursor-pointer hover:font-bold"
           >
             Logout
           </button>
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-hide">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-4 scrollbar-hide">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Getting to Know You
           </h2>
 
           {/* Gender Selection */}
           <div className="mb-6">
-            <label className="block text-gray-600 text-base mb-3">
+            <label className="block text-gray-600 text-base md:text-lg mb-3">
               Select your gender
             </label>
             <div className="flex gap-4">
               {["male", "female", "other"].map((option) => (
                 <label
                   key={option}
-                  className={`flex-1 text-center p-3 rounded-xl border-2 cursor-pointer transition ${
+                  className={`flex-1 text-center p-3 md:p-4 rounded-xl border-2 cursor-pointer transition ${
                     formData.gender === option
                       ? "border-cyan-500 bg-cyan-500"
                       : "border-gray-300 bg-white hover:border-gray-400"
@@ -119,7 +119,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
 
           {/* Physical Activity Selection */}
           <div className="mb-6">
-            <label className="block text-gray-600 text-base mb-3">
+            <label className="block text-gray-600 text-base md:text-lg mb-3">
               Physical Activity Level
             </label>
             <select
@@ -127,7 +127,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
               onChange={(e) =>
                 handleInputChange("physicalActivity", e.target.value)
               }
-              className="w-full px-2 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600 text-gray-900"
+              className="w-full px-2 py-3 md:px-3 md:py-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600 text-gray-900"
             >
               <option value="">Select activity level</option>
               <option value="sedentary">
@@ -144,7 +144,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
 
           {/* Age Input */}
           <div className="mb-6 px-0">
-            <label className="block text-gray-600 text-base mb-3">
+            <label className="block text-gray-600 text-base md:text-lg mb-3">
               How old are you?
             </label>
             <div className="flex items-center gap-2">
@@ -152,9 +152,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.age}
                 onChange={(e) => handleInputChange("age", e.target.value)}
-                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 md:px-5 md:py-4 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 md:py-4 rounded-xl font-semibold text-lg">
                 yrs
               </div>
             </div>
@@ -162,7 +162,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
 
           {/* Height Input */}
           <div className="mb-6 px-0">
-            <label className="block text-gray-600 text-base mb-3">
+            <label className="block text-gray-600 text-base md:text-lg mb-3">
               How tall are you?
             </label>
             <div className="flex items-center gap-2">
@@ -170,9 +170,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.height}
                 onChange={(e) => handleInputChange("height", e.target.value)}
-                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 md:px-5 md:py-4 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 md:py-4 rounded-xl font-semibold text-lg">
                 cm
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
 
           {/* Weight Input */}
           <div className="mb-6">
-            <label className="block text-gray-600 text-base mb-3">
+            <label className="block text-gray-600 text-base md:text-lg mb-3">
               How much do you weigh?
             </label>
             <div className="flex items-center gap-2">
@@ -188,9 +188,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 type="number"
                 value={formData.weight}
                 onChange={(e) => handleInputChange("weight", e.target.value)}
-                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 md:px-5 md:py-4 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-cyan-50 text-cyan-600 py-3 md:py-4 rounded-xl font-semibold text-lg">
                 kg
               </div>
             </div>
@@ -198,7 +198,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
 
           {/* Goal Weight Input */}
           <div className="mb-6">
-            <label className="block text-gray-600 text-base mb-3">
+            <label className="block text-gray-600 text-base md:text-lg mb-3">
               What's your goal weight?
             </label>
             <div className="flex items-center gap-2">
@@ -208,9 +208,9 @@ export default function PhysicalInfo({ onNext, onBack }) {
                 onChange={(e) =>
                   handleInputChange("goalWeight", e.target.value)
                 }
-                className="flex-1 px-4 py-3 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
+                className="flex-1 px-4 py-3 md:px-5 md:py-4 text-gray-900 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-cyan-600"
               />
-              <div className="w-20 text-center bg-gray-100 text-gray-500 py-3 rounded-xl font-semibold text-lg">
+              <div className="w-20 text-center bg-gray-100 text-gray-500 py-3 md:py-4 rounded-xl font-semibold text-lg">
                 kg
               </div>
             </div>
@@ -218,7 +218,7 @@ export default function PhysicalInfo({ onNext, onBack }) {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="px-4 py-6 pb-16">
+        <div className="px-4 md:px-6 py-6 pb-16">
           <BottomNavigation
             onBack={onBack}
             onNext={handleNext}

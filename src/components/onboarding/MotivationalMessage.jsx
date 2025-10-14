@@ -123,7 +123,21 @@ const MOTIVATIONAL_CONTENT = {
     encouragement:
       "You're not just changing your body, you're upgrading your entire life! ✨",
   },
-}; // Default content if no specific goals match const DEFAULT_CONTENT = { icon: FaHeartbeat, title: "Your Fitness Journey Begins!", subtitle: "Ready to start?", message: "Every fitness journey is unique, but they all start with one decision.", description: "We'll be with you every step of the way, providing guidance, motivation, and the tools you need to reach your goals.", visualization: "general-progress", encouragement: "The best time to start was yesterday. The second best time is now! 🚀", };
+};
+
+// Default content if no goal selected
+const DEFAULT_CONTENT = {
+  icon: FaHeartbeat,
+  title: "Your Fitness Journey Begins!",
+  subtitle: "Ready to start?",
+  message:
+    "Every fitness journey is unique, but they all start with one decision.",
+  description:
+    "We'll be with you every step of the way, providing guidance, motivation, and the tools you need to reach your goals.",
+  visualization: "general-progress",
+  encouragement:
+    "The best time to start was yesterday. The second best time is now! 🚀",
+};
 
 export default function MotivationalMessage({
   firstName,
@@ -140,8 +154,8 @@ export default function MotivationalMessage({
   const renderVisualization = () => {
     if (content.visualization === "progress-chart") {
       return (
-        <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 backdrop-blur-sm border border-gray-700">
-          <div className="relative h-24 sm:h-32 mb-3 sm:mb-4">
+        <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 backdrop-blur-sm border border-gray-700">
+          <div className="relative h-24 sm:h-32 md:h-40 mb-3 sm:mb-4">
             <svg
               viewBox="0 0 300 100"
               className="w-full h-full"
@@ -174,7 +188,7 @@ export default function MotivationalMessage({
               <circle cx="285" cy="32" r="4" fill="#10b981" />
             </svg>
           </div>
-          <div className="flex justify-between text-gray-400 text-xs sm:text-sm">
+          <div className="flex justify-between text-gray-400 text-xs sm:text-sm md:text-base">
             <span>Today</span>
             <span>Your Goal</span>
           </div>
@@ -183,15 +197,15 @@ export default function MotivationalMessage({
     }
 
     return (
-      <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 backdrop-blur-sm border border-gray-700 flex flex-col items-center">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-          <IconComponent className="text-white text-xl sm:text-2xl" />
+      <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-8 md:p-10 mb-6 sm:mb-8 backdrop-blur-sm border border-gray-700 flex flex-col items-center">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+          <IconComponent className="text-white text-xl sm:text-2xl md:text-3xl" />
         </div>
         <div className="text-center">
-          <div className="text-xl sm:text-2xl font-bold text-white mb-2">
+          <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2">
             {primaryGoal?.title || "Your Goal"}
           </div>
-          <div className="text-gray-300 text-xs sm:text-sm">
+          <div className="text-gray-300 text-xs sm:text-sm md:text-base">
             {primaryGoal?.description || "Let's make it happen!"}
           </div>
         </div>
@@ -200,26 +214,26 @@ export default function MotivationalMessage({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
+    <div className="w-full max-w-md md:max-w-lg mx-auto h-dvh flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
       {/* Header */}
-      <div className="px-4 pt-6 mb-6">
-        <h1 className="text-lg sm:text-xl font-medium text-gray-300">
+      <div className="px-4 md:px-6 pt-6 md:pt-8 mb-6">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-medium text-gray-300">
           Motivation
         </h1>
       </div>
 
-      {/* Main Content (scrollable) */}
-      <div className="flex-1 px-4 overflow-y-auto scrollbar-hide">
-        <p className="text-gray-400 text-base sm:text-lg mb-3 sm:mb-4">
+      {/* Main Content */}
+      <div className="flex-1 px-4 md:px-6 overflow-y-auto scrollbar-hide">
+        <p className="text-gray-400 text-base sm:text-lg md:text-xl mb-3 sm:mb-4">
           {content.subtitle}
         </p>
-        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 sm:mb-6 leading-tight">
           {content.title}
         </h2>
-        <p className="text-white/90 text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
+        <p className="text-white/90 text-base sm:text-lg md:text-xl leading-relaxed mb-6 sm:mb-8">
           {content.message}
         </p>
-        <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 sm:mb-8">
+        <p className="text-gray-300 text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8">
           {content.description}
         </p>
 
@@ -227,18 +241,18 @@ export default function MotivationalMessage({
         {renderVisualization()}
       </div>
 
-      {/* ✅ Fixed Bottom Navigation (consistent with Welcome & Goals) */}
-      <div className="px-4 py-6 pb-5 flex items-center gap-4">
+      {/* Bottom Navigation */}
+      <div className="px-4 md:px-6 py-6 pb-5 flex items-center gap-4">
         <button
           onClick={onBack}
-          className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-700/50 hover:bg-gray-600/50 transition-colors backdrop-blur-sm border border-gray-600"
+          className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center rounded-full bg-gray-700/50 hover:bg-gray-600/50 transition-colors backdrop-blur-sm border border-gray-600"
         >
-          <FaArrowLeft className="text-white text-base" />
+          <FaArrowLeft className="text-white text-base sm:text-lg md:text-xl" />
         </button>
 
         <button
-          onClick={() => onNext({})} // pass an empty object or whatever data you want
-          className="flex-1 cursor-pointer py-4 px-6 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg text-base"
+          onClick={() => onNext({})}
+          className="flex-1 cursor-pointer py-4 px-6 md:py-5 md:px-8 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg text-base sm:text-lg md:text-xl"
         >
           Continue Journey
         </button>

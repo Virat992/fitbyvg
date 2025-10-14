@@ -56,7 +56,7 @@ export default function HealthHabits({ firstName, onNext, onBack }) {
   const HabitButton = ({ habit, isRecommended = false }) => (
     <button
       onClick={() => toggleHabit(habit)}
-      className={`px-4 py-3 rounded-full cursor-pointer text-sm font-medium transition-all ${
+      className={`px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-4 rounded-full cursor-pointer text-sm sm:text-base md:text-lg font-medium transition-all ${
         selectedHabits.includes(habit)
           ? "bg-cyan-600 text-white border-2 border-cyan-600"
           : isRecommended
@@ -69,27 +69,29 @@ export default function HealthHabits({ firstName, onNext, onBack }) {
   );
 
   return (
-    <div className="w-full max-w-md mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
+    <div className="w-full max-w-md md:max-w-lg mx-auto h-dvh flex flex-col bg-gradient-to-b from-cyan-50 via-white to-cyan-100">
       {/* Header */}
-      <div className="px-4 pt-6 mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 ">Health Habits</h1>
+      <div className="px-4 md:px-6 pt-6 md:pt-8 mb-8 flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+          Health Habits
+        </h1>
         <button
           onClick={handleLogout}
-          className="text-sm pr-2 font-semibold text-cyan-600 cursor-pointer hover:font-bold"
+          className="text-sm sm:text-base md:text-lg pr-2 font-semibold text-cyan-600 cursor-pointer hover:font-bold"
         >
           Logout
         </button>
       </div>
 
       {/* Main Content (scrollable) */}
-      <div className="flex-1 px-4 overflow-y-auto scrollbar-hide">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+      <div className="flex-1 px-4 md:px-6 overflow-y-auto scrollbar-hide">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
           Which health habits are most important to you?
         </h2>
 
         {/* Recommended Habits */}
         <div className="mb-6">
-          <h3 className="text-gray-600 text-sm font-medium mb-4">
+          <h3 className="text-gray-600 text-sm sm:text-base md:text-lg font-medium mb-4">
             Recommended for you
           </h3>
           <div className="flex flex-wrap gap-3">
@@ -101,7 +103,7 @@ export default function HealthHabits({ firstName, onNext, onBack }) {
 
         {/* More Habits */}
         <div className="mb-6 pb-4">
-          <h3 className="text-gray-600 text-sm font-medium mb-4">
+          <h3 className="text-gray-600 text-sm sm:text-base md:text-lg font-medium mb-4">
             More healthy habits
           </h3>
           <div className="flex flex-wrap gap-3">
@@ -112,8 +114,8 @@ export default function HealthHabits({ firstName, onNext, onBack }) {
         </div>
       </div>
 
-      {/* ✅ Fixed Bottom Navigation (same as Goals & Welcome) */}
-      <div className="px-4 py-6 pb-16">
+      {/* Bottom Navigation */}
+      <div className="px-4 md:px-6 py-6 pb-16">
         <BottomNavigation
           onBack={onBack}
           onNext={handleNext}
