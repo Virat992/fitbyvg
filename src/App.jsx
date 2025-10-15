@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
 import AddWorkout from "./admin/AddWorkout.jsx";
 import FoodBuilder from "./admin/FoodBuilder.jsx";
+import LandingPagePc from "./pages/LandingPagePc.jsx";
 
 import DietDashboard from "./components/diet/DietDashboard.jsx";
 
@@ -20,6 +21,7 @@ function App() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/pc" element={<LandingPagePc />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/workout" element={<WorkoutTemplates />} />

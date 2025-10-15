@@ -495,7 +495,7 @@ export default function DietDashboard({ userId }) {
           </div>
         </div>
       ),
-      bg: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg rounded-2xl",
+      bg: "bg-gradient-to-r from-gray-600 to-gray-800 text-white shadow-lg rounded-2xl",
     },
 
     {
@@ -587,7 +587,7 @@ export default function DietDashboard({ userId }) {
           </div>
         </div>
       ),
-      bg: "bg-gradient-to-r from-purple-400 to-pink-400 text-white shadow-lg rounded-2xl",
+      bg: "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg rounded-2xl",
     },
   ];
 
@@ -613,58 +613,71 @@ export default function DietDashboard({ userId }) {
         ))}
       </div>
 
-      {/* Add Meal Button */}
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={() => setAddingMeal(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg transition"
-        >
-          Add Meal
-        </button>
-      </div>
+      <button
+        onClick={() => setAddingMeal(true)}
+        className="flex mx-auto items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 
+             text-white font-medium px-6 py-3 rounded-full shadow-md 
+             hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+      >
+        <span className="text-lg">➕</span> Add Meal
+      </button>
 
       {/* Meals List */}
 
-      <div className="space-y-3 mt-4 max-h-50 overflow-y-auto">
+      <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto px-1 sm:px-2">
         {meals.length === 0 ? (
-          <div className="text-center text-gray-400 py-6">
+          <div className="text-center text-gray-400 py-8 text-base sm:text-lg">
             Log your first meal 🍽️
           </div>
         ) : (
           meals.map((meal, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl shadow-md p-4 border"
+              tabIndex={0}
+              onKeyDown={(e) =>
+                (e.key === "Enter" || e.key === " ") && toggleExpanded(idx)
+              }
+              className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-5 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-cyan-400 hover:shadow-md"
             >
-              <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-gray-800 text-md">
-                  Meal {idx + 1} - {Math.round(meal.calories)} kcal
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                <h4 className="font-semibold text-gray-800 text-base sm:text-lg leading-snug">
+                  Meal {idx + 1}
+                  <span className="ml-2 text-gray-500 text-sm sm:text-base">
+                    ({Math.round(meal.calories)} kcal)
+                  </span>
                 </h4>
+
                 <button
                   onClick={() => toggleExpanded(idx)}
-                  className="text-sm text-cyan-600 hover:underline"
+                  className="text-sm text-cyan-600 hover:text-cyan-700 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-md self-start sm:self-auto"
                 >
-                  {expandedMeals[idx] ? "Collapse" : "Expand"}
+                  {expandedMeals[idx] ? "Collapse ▲" : "Expand ▼"}
                 </button>
               </div>
+
+              {/* Expanded Content */}
               {expandedMeals[idx] && (
-                <div className="mt-2 text-gray-500 text-sm space-y-1">
+                <div className="mt-3 text-gray-600 text-sm sm:text-base space-y-2">
                   {meal.items.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center">
-                      <span className="truncate max-w-[70%]">
+                    <div
+                      key={i}
+                      className="flex justify-between items-center border-b border-gray-100 pb-1"
+                    >
+                      <span className="truncate max-w-[65%] sm:max-w-[70%]">
                         {item.quantity} × {item.name}
                       </span>
-                      <span className="ml-2 flex-shrink-0">
-                        {item.calories} kcal
+                      <span className="font-medium text-gray-700">
+                        {Math.round(item.calories)} kcal
                       </span>
                     </div>
                   ))}
 
                   {/* Action buttons */}
-                  <div className="flex justify-end space-x-2 mt-2">
+                  <div className="flex flex-wrap justify-end gap-3 mt-3 pt-2 border-t border-gray-100">
                     <button
                       onClick={() => handleDeleteMeal(meal.id)}
-                      className="text-red-500 hover:underline text-sm"
+                      className="px-3 py-1.5 text-sm sm:text-base text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all focus:ring-2 focus:ring-red-400"
                     >
                       Delete
                     </button>
@@ -674,7 +687,7 @@ export default function DietDashboard({ userId }) {
                         setMealToEdit(meal);
                         setAddingMeal(true);
                       }}
-                      className="text-blue-500 hover:underline text-sm"
+                      className="px-3 py-1.5 text-sm sm:text-base text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all focus:ring-2 focus:ring-blue-400"
                     >
                       Edit
                     </button>
@@ -880,23 +893,71 @@ export default function DietDashboard({ userId }) {
 
       {/* Add Macros Modal */}
       {adjustingMacros && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-lg w-full max-w-md max-h-[70vh] flex flex-col">
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-3 sm:p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Overlay click to close */}
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              setTempMacros({ ...macros });
+              setAdjustingMacros(false);
+            }}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md flex flex-col max-h-[85vh] overflow-hidden focus:outline-none"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                // Save on Enter
+                e.preventDefault();
+                (async () => {
+                  setMacros({ ...tempMacros });
+                  setAdjustingMacros(false);
+                  if (!user || !selectedDate) return;
+
+                  const dateKey = selectedDate.toISOString().split("T")[0];
+                  const mealRef = doc(db, "users", user.uid, "meals", dateKey);
+
+                  try {
+                    await setDoc(
+                      mealRef,
+                      {
+                        limitMacros: { ...tempMacros },
+                        updatedAt: new Date(),
+                      },
+                      { merge: true }
+                    );
+                  } catch (err) {
+                    console.error("Failed to save macros limit:", err);
+                  }
+                })();
+              }
+            }}
+          >
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex-shrink-0">
-              <h3 className="text-xl font-semibold text-gray-700">
+            <div className="p-4 sm:p-5 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-700 text-center sm:text-left">
                 Adjust Macros
               </h3>
             </div>
 
             {/* Inputs */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
               {["protein", "carbs", "fat"].map((macro) => (
                 <div key={macro}>
-                  <label className="block font-bold text-gray-600 mb-1">
+                  <label
+                    htmlFor={macro}
+                    className="block font-semibold text-gray-700 mb-1"
+                  >
                     {macro.charAt(0).toUpperCase() + macro.slice(1)} (g)
                   </label>
                   <input
+                    id={macro}
                     type="number"
                     min={0}
                     value={tempMacros[macro]}
@@ -908,34 +969,35 @@ export default function DietDashboard({ userId }) {
                         newMacros.carbs * 4 +
                         newMacros.fat * 9;
 
-                      // Only update if total calories <= dailyLimit
                       if (totalCalories <= dailyLimit) {
                         setTempMacros(newMacros);
                       } else {
-                        // Optional: show a warning or just prevent exceeding
                         alert("Total calories exceed daily limit!");
                       }
                     }}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+                    tabIndex={0}
                   />
                 </div>
               ))}
 
               {/* Info */}
-              <p className="text-sm text-gray-700 mt-2">
-                Total calories from macros:{" "}
-                {tempMacros.protein * 4 +
-                  tempMacros.carbs * 4 +
-                  tempMacros.fat * 9}{" "}
-                kcal
-              </p>
-              <p className="text-xs text-gray-500">
-                Cannot exceed Daily Calories: {dailyLimit} kcal
-              </p>
+              <div className="text-sm text-gray-700 space-y-1">
+                <p>
+                  <span className="font-medium">Total calories:</span>{" "}
+                  {tempMacros.protein * 4 +
+                    tempMacros.carbs * 4 +
+                    tempMacros.fat * 9}{" "}
+                  kcal
+                </p>
+                <p className="text-xs text-gray-500">
+                  Cannot exceed daily limit of {dailyLimit} kcal
+                </p>
+              </div>
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-200 flex justify-between flex-shrink-0">
+            <div className="p-4 sm:p-5 border-t border-gray-200 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
               <button
                 onClick={async () => {
                   setMacros({ ...tempMacros });
@@ -959,7 +1021,8 @@ export default function DietDashboard({ userId }) {
                     console.error("Failed to save macros limit:", err);
                   }
                 }}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                className="bg-green-500 text-white px-4 py-2 rounded-xl hover:bg-green-600 focus:ring-2 focus:ring-green-400 transition-all w-full sm:w-auto"
+                tabIndex={0}
               >
                 Save
               </button>
@@ -969,7 +1032,8 @@ export default function DietDashboard({ userId }) {
                   setTempMacros({ ...macros });
                   setAdjustingMacros(false);
                 }}
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-xl hover:bg-gray-400 focus:ring-2 focus:ring-gray-400 transition-all w-full sm:w-auto"
+                tabIndex={0}
               >
                 Cancel
               </button>

@@ -8,6 +8,7 @@ import ChatWindow from "../components/dashboard/ChatWindow";
 import AdminInbox from "../admin/AdminInbox";
 import UserInbox from "../components/dashboard/UserInbox";
 import ExploreTab from "../components/explore/ExploreTab";
+import { MessagesSquare } from "lucide-react";
 
 import Calendar from "../components/dashboard/Calender";
 import TopBar from "../components/dashboard/TopBar";
@@ -565,7 +566,7 @@ export default function Dashboard() {
           <>
             {/* Workout Tab */}
             {activeTab === "workout" && (
-              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+74px)]">
+              <div className="absolute inset-0 overflow-y-auto px-5 md:px-0 pt-0 md:pb-[calc(env(safe-area-inset-bottom)+55px)] pb-[calc(env(safe-area-inset-bottom)+74px)]">
                 <>
                   {/* Main Dashboard / Workouts */}
                   {!calendarView && !calendarDetails && (
@@ -724,13 +725,13 @@ export default function Dashboard() {
             )}
 
             {activeTab === "progress" && (
-              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+55px)]">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 md:pb-[calc(env(safe-area-inset-bottom)+35px)] pb-[calc(env(safe-area-inset-bottom)+55px)]">
                 <ProgressTab userId={userId} />
               </div>
             )}
 
             {activeTab === "explore" && (
-              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 pb-[calc(env(safe-area-inset-bottom)+74px)]">
+              <div className="absolute inset-0 overflow-y-auto px-5 pt-0 md:pb-[calc(env(safe-area-inset-bottom)+60px)] pb-[calc(env(safe-area-inset-bottom)+74px)]">
                 <ExploreTab />
               </div>
             )}
@@ -1002,12 +1003,15 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Floating button */}
         <button
           onClick={() => setIsChatOpen(!isChatOpen)}
-          className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          className="w-14 h-14 md:w-16 md:h-16 rounded-full 
+             bg-gradient-to-r from-cyan-500 to-blue-500 
+             text-white shadow-lg shadow-cyan-500/30 
+             backdrop-blur-md hover:shadow-xl hover:scale-105 
+             active:scale-95 transition-all duration-300 flex items-center justify-center"
         >
-          💬
+          <MessagesSquare className="w-6 h-6" />
         </button>
       </div>
 
