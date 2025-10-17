@@ -1,6 +1,8 @@
 // src/pages/LandingPage.jsx
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 // Example images (replace with your own)
 const carouselImages = [
@@ -38,100 +40,65 @@ export default function LandingPage() {
 
   return (
     <div className="font-sans overflow-auto text-gray-900">
-      {/* Hero Section */}
-      <section className="relative h-screen bg-gradient-to-r from-cyan-600 to-blue-500 flex items-center justify-center">
-        <div className="absolute inset-0 overflow-hidden">
-          {carouselImages.map((img, index) => (
-            <motion.img
-              key={index}
-              src={img}
-              alt={`Slide ${index}`}
-              className={`absolute w-full h-full object-cover transition-opacity duration-1000 ${
-                index === current ? "opacity-100" : "opacity-0"
-              }`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: index === current ? 1 : 0 }}
+      {/* Header */}
+      <header className=" bg-gradient-to-r from-cyan-600 to-blue-500 w-full flex justify-between items-center px-[250px] py-4 z-20">
+        <h1 className="text-2xl font-bold text-white">FITBYVG™</h1>
+        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-cyan-600 shadow-md cursor-pointer">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2.5"
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 
+          20.25a8.25 8.25 0 0115 0M12 14.25v.008h.008V14.25H12z"
             />
-          ))}
+          </svg>
         </div>
-        <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-5xl font-bold mb-4">FITBYVG</h1>
-          <p className="text-xl max-w-xl mx-auto">
-            Workouts designed for your fitness goals by experienced fitness
-            professionals.
-          </p>
-          <button className="mt-6 px-8 py-3 bg-white text-cyan-600 font-semibold rounded-lg hover:bg-gray-200 transition">
-            Get Started
-          </button>
-        </div>
-      </section>
+      </header>
 
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <h2 className="text-4xl font-bold text-center mb-12 text-cyan-600">
-          Features
-        </h2>
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition cursor-pointer text-center"
-            >
-              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-              <p className="text-gray-600">{feature.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Progress & Charts Section */}
-      <section className="py-20 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Track Your Progress</h2>
-          <p className="mb-12 text-lg">
-            Visualize your growth and stay motivated with detailed charts and
-            insights.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white text-gray-900 p-6 rounded-2xl shadow-lg">
-              <img
-                src="https://images.unsplash.com/photo-1554284126-3e3e0f2f1599"
-                alt="Progress Chart"
-                className="rounded-lg mb-4"
-              />
-              <p className="font-semibold text-center">Workout Progress</p>
-            </div>
-            <div className="bg-white text-gray-900 p-6 rounded-2xl shadow-lg">
-              <img
-                src="https://images.unsplash.com/photo-1554284126-3e3e0f2f1598"
-                alt="Diet Chart"
-                className="rounded-lg mb-4"
-              />
-              <p className="font-semibold text-center">Diet & Macros</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Chat With Coach Section */}
-      <section className="py-20 bg-gray-100">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-10 px-4">
-          <img
-            src="https://images.unsplash.com/photo-1605296867304-46d5465a13f1"
-            alt="Chat with coach"
-            className="rounded-2xl shadow-lg w-full md:w-1/2"
-          />
-          <div>
-            <h2 className="text-4xl font-bold text-cyan-600 mb-6">
-              Chat With Your Coach Anytime
-            </h2>
-            <p className="text-gray-700 mb-6">
-              Get real-time guidance and motivation from certified fitness
-              professionals to help you achieve your goals faster.
+      {/* Hero Section */}
+      <section className=" h-screen px-[192px] mb-14 bg-gradient-to-r from-cyan-600 to-blue-500 flex flex-col justify-center">
+        <div className="max-w-full flex flex-col md:flex-row items-center justify-between mb-24 md:px-16">
+          {/* Left Text Content */}
+          <div className="text-white max-w-[700px] mb-12 md:mb-0">
+            <p className="text-lg mb-8 opacity-90">
+              Nutrition tracking and workout app designed for India
             </p>
-            <button className="px-8 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 transition">
-              Start Chatting
+            <h1 className="text-5xl max-w-[700px] md:text-6xl font-semibold leading-tight mb-4">
+              <span className="bg-white px-2 text-cyan-600">Transform</span>{" "}
+              Your Fitness Journey
+            </h1>
+            <p className="text-lg max-w-[450px] opacity-90">
+              Track your meals, log workouts, and connect with fitness
+              coaches—all in one app.
+            </p>
+
+            <button className="mt-8 cursor-pointer px-8 py-3 bg-white text-cyan-600 font-semibold rounded-3xl hover:bg-gray-200 transition flex items-center justify-center gap-2">
+              <span className="text-[15px] tracking-wide">
+                BEGIN YOUR JOURNEY
+              </span>
+              <span className="text-[16px] leading-none relative -top-[1px]">
+                ❯
+              </span>
             </button>
+          </div>
+
+          {/* Right Image (Phone Mockup) */}
+          <div className="relative">
+            <div className="w-64 mr-8  bg-white rounded-[40px] shadow-2xl p-0">
+              <img
+                src="/Images/hero-phone-large.png"
+                alt="App Screenshot"
+                className="w-full h-full object-cover rounded-2xl"
+              />
+            </div>
+            <div className="absolute inset-0 rounded-3xl bg-white/10 blur-2xl -z-10"></div>
           </div>
         </div>
       </section>
