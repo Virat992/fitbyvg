@@ -4,8 +4,17 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        roboto: ["Roboto", "sans-serif"], // add custom font
-        cursive: ['"Dancing Script"', "cursive"], // example if you want another
+        roboto: ["Roboto", "sans-serif"],
+        cursive: ['"Dancing Script"', "cursive"],
+      },
+      keyframes: {
+        moveLeftRight: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(6px)" },
+        },
+      },
+      animation: {
+        "left-right": "moveLeftRight 0.8s ease-in-out infinite",
       },
     },
   },

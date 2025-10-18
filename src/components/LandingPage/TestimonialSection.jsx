@@ -23,8 +23,8 @@ export default function TestimonialSection() {
   const [current, setCurrent] = useState(0);
 
   return (
-    <section className="w-full bg-black py-20">
-      <div className="max-w-4xl mx-auto text-center px-4">
+    <section className="w-full  bg-gray-900/90 py-16">
+      <div className="w-[80%] md:w-[50%] lg:w-[100%] mx-auto text-center px-4">
         {/* Big Heading */}
         <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-12">
           Results Not Promises
