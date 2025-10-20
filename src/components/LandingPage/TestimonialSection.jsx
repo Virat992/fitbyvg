@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const testimonials = [
   {
     quote:
-      "This app completely transformed my fitness journey. I track meals, workouts, and progress all in one place. Highly recommended!",
+      "This app completely transformed my fitness journey. I track meals, workouts, and progress all in one place.",
     name: "— Priya S.",
   },
   {
@@ -39,7 +39,7 @@ export default function TestimonialSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              className="text-white text-lg md:text-xl italic"
+              className="text-white text-lg md:text-xl italic min-h-[130px] flex items-center justify-center"
             >
               “{testimonials[current].quote}”
             </motion.div>
