@@ -26,7 +26,7 @@ export default function TestimonialSection() {
     <section className="w-full  bg-gray-900/90 py-16">
       <div className="w-[80%] md:w-[50%] lg:w-[100%] mx-auto text-center px-4">
         {/* Big Heading */}
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-12">
+        <h2 className="text-4xl md:text-5xl lg:text-5xl font-bold text-white mb-12">
           Results Not Promises
         </h2>
 
@@ -39,7 +39,7 @@ export default function TestimonialSection() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              className="text-white text-lg md:text-xl italic min-h-[130px] flex items-center justify-center"
+              className="text-white text-lg md:text-xl italic lg:min-h-[10px] min-h-[130px] flex items-center justify-center"
             >
               “{testimonials[current].quote}”
             </motion.div>
@@ -51,7 +51,7 @@ export default function TestimonialSection() {
           </div>
 
           {/* Star Rating */}
-          <div className="flex justify-center mt-6 space-x-1">
+          <div className="flex justify-center mt-6 lg:mt-6 space-x-1">
             {[...Array(5)].map((_, i) => (
               <svg
                 key={i}

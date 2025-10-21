@@ -12,7 +12,7 @@ const photos = [
 
 const testimonials = [
   {
-    text: "This app completely transformed my fitness journey! I never felt so motivated.",
+    text: "This app completely transformed my fitness journey! I never felt so motivated and stayed consistent.",
     author: "Ravi K.",
   },
   {
@@ -32,7 +32,7 @@ const testimonials = [
     author: "Priya T.",
   },
   {
-    text: "I hit my fitness goals faster than I thought possible. Truly a game-changer!",
+    text: "I hit my fitness goals faster than I thought possible with sustainable way. Truly a game-changer!",
     author: "Karan S.",
   },
 ];
@@ -41,7 +41,7 @@ export default function RealPhotosGrid() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section className="w-full bg-white py-15">
+    <section className="w-full lg:w-[80%] md:w-[75%] mx-auto bg-white py-15">
       <div className="max-w-6xl mx-auto px-6">
         {/* Section Title */}
         <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 text-center mb-12">
