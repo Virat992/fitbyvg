@@ -5,8 +5,11 @@ export default function WorkoutCarousel({
   cardHighlight,
 }) {
   return (
-    <div className="mb-0 pt-5 pb-0 w-full max-w-md md:max-w-2xl mx-auto overflow-visible">
-      <h3 className="text-[16px] md:text-[18px] font-bold text-gray-800 mb-2 md:mb-3 px-2 md:px-0">
+    <div className="mb-0 pt-5 pb-0 w-full max-w-md md:max-w-2xl mx-auto overflow-visible
+    /* Full-width flowing on large screens */
+  lg:w-full lg:max-w-none lg:px-10
+    ">
+      <h3 className="text-[16px] w-full  lg:mb-2 md:text-[18px] font-bold text-gray-800 mb-2 md:mb-3 px-2 md:px-0">
         {title}
       </h3>
 

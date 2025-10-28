@@ -161,7 +161,7 @@ export default function ProgressTab({ userId }) {
   const getChartWidth = (data) => Math.max(data.length * 60, 500);
 
   return (
-    <div className="px-3 md:px-6 pt-4 pb-6 space-y-8 overflow-y-auto h-full">
+    <div className="px-3 md:px-6 pt-4 pb-6 space-y-8 scrollbar-hidden overflow-y-auto h-full">
       {/* Title */}
       <h1 className="text-lg md:text-xl font-bold text-gray-800">
         Progress Overview
@@ -313,7 +313,7 @@ export default function ProgressTab({ userId }) {
         )}
 
         {showLogPanel && (
-          <div className="mt-3 border-t pt-2 flex flex-col gap-2 max-h-64 overflow-y-auto">
+          <div className="mt-3 border-t pt-2 flex flex-col gap-2 max-h-64 overflow-y-auto scrollbar-hidden">
             {weightLogs
               .sort((a, b) => new Date(b.date) - new Date(a.date))
               .map((w) => (

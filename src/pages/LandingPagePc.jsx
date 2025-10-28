@@ -373,7 +373,7 @@ export default function LandingPage() {
             Start Today
           </button>
 
-          <p className="text-white/80 text-sm pb-0">
+          <p className="text-white/80 text-sm pb-10">
             © 2025 FITBYVG. All rights reserved.
           </p>
         </div>

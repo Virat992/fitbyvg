@@ -11,7 +11,7 @@ export default function BottomNav({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 sm:py-3 md:py-3 shadow-xl md:shadow-2xl rounded-t-2xl z-60">
+    <div className="fixed bottom-0 lg:py-1  left-0 w-full bg-white border-t border-gray-200 flex justify-around items-center py-2 sm:py-3 md:py-3 shadow-xl md:shadow-2xl rounded-t-2xl z-60 ">
       {tabs.map(({ id, label, icon: Icon }) => (
         <button
           key={id}
@@ -21,7 +21,7 @@ export default function BottomNav({ activeTab, setActiveTab }) {
           }`}
         >
           <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mb-0.5" />
-          <span className="mt-0.5">{label}</span>
+          <span className="mt-0.5 lg:text-[12px] ">{label}</span>
         </button>
       ))}
     </div>

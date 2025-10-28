@@ -561,12 +561,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="flex-1 max-h-[80vh] px-5 pb-15 py-0 relative overflow-auto">
+      <div className="flex-1 lg:w-screen lg:h-screen max-h-[80vh] px-5 pb-15 py-0 relative overflow-auto">
         {!calendarView && !selectedDate && !calendarDetails && (
           <>
             {/* Workout Tab */}
             {activeTab === "workout" && (
-              <div className="absolute inset-0 overflow-y-auto px-5 md:px-0 pt-0 md:pb-[calc(env(safe-area-inset-bottom)+55px)] pb-[calc(env(safe-area-inset-bottom)+74px)]">
+              <div className="absolute lg:pb-[calc(env(safe-area-inset-bottom)+65px)] inset-0 overflow-y-auto lg:px-10 lg:py-0 px-5 md:px-0 pt-0 md:pb-[calc(env(safe-area-inset-bottom)+0px)] pb-[calc(env(safe-area-inset-bottom)+74px)]">
                 <>
                   {/* Main Dashboard / Workouts */}
                   {!calendarView && !calendarDetails && (
