@@ -100,7 +100,7 @@ export default function Login() {
           onClick={() => navigate("/")}
         >
           <p
-            className="text-[40px] md:text-[52px] -mt-15 md:-mt-20 font-bold text-white"
+            className="text-[40px] md:text-[52px] lg:-mt-30 -mt-15 md:-mt-20 font-bold text-white"
             style={{ fontFamily: "'Roboto', cursive" }}
           >
             FITBYVG
@@ -109,7 +109,7 @@ export default function Login() {
         </div>
 
         {/* Login Form Card */}
-        <div className="w-full bg-white shadow-lg rounded-3xl -mt-10 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center max-w-[420px] md:max-w-[600px]">
+        <div className="w-full bg-white shadow-lg rounded-3xl lg:-mt-32 -mt-10 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center max-w-[420px] md:max-w-[600px]">
           {/* Header */}
           <div className="flex items-center justify-center relative w-full mb-4">
             <p className="flex items-center gap-2 text-[20px] md:text-[24px] font-bold text-gray-800">

@@ -105,7 +105,7 @@ export default function Signup() {
           onClick={() => navigate("/")}
         >
           <p
-            className="text-[40px] md:text-[52px] -mt-15 md:-mt-20 font-bold text-white"
+            className="text-[40px] md:text-[52px] lg:-mt-60 -mt-15 md:-mt-20 font-bold text-white"
             style={{ fontFamily: "'Roboto', cursive" }}
           >
             FITBYVG
@@ -114,7 +114,7 @@ export default function Signup() {
         </div>
 
         {/* Signup Form Card */}
-        <div className="w-full bg-white shadow-lg rounded-3xl -mt-12 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center">
+        <div className="w-full bg-white shadow-lg rounded-3xl lg:-mt-60 -mt-12 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center">
           <div className="flex items-center justify-center relative w-full mb-4">
             <p className="flex items-center gap-2 text-[20px] md:text-[24px] font-bold text-gray-800">
               Create Your Account

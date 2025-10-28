@@ -21,11 +21,11 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const handleStartClick = () => {
-    navigate("/"); // 👈 adjust path to your route
+    navigate("/pc"); // 👈 adjust path to your route
   };
 
   const goHome = () => {
-    navigate("/"); // navigates to home page
+    navigate("/pc"); // navigates to home page
   };
 
   // Auto slide every 5s
@@ -39,10 +39,10 @@ export default function LandingPage() {
       {/* Header */}
 
       {/* Hero Section */}
-      <section className="w-full bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-400 py-16 md:px-16 lg:px-[265px]">
+      <section className="w-full lg:mt-10 bg-gradient-to-r from-cyan-700 via-cyan-600 to-cyan-400 py-16 md:px-16 lg:px-[265px]">
         <div className="flex flex-col lg:flex-row items-start lg:items-center lg:justify-between gap-12  mx-auto">
           {/* Left Text Content */}
-          <div className="text-white w-65 lg:w-[100%] mx-auto md:w-90 text-center lg:text-left">
+          <div className="text-white mt-10 w-65 lg:w-[100%] mx-auto md:w-90 text-center lg:text-left">
             <p className="text-lg font-semibold mb-6 opacity-90">
               #1 Nutrition tracking and workout app designed for India
             </p>
@@ -206,7 +206,7 @@ export default function LandingPage() {
       <RealPhotosGrid />
 
       {/* Trainer Introduction Section */}
-      <section className="w-full md:w-[80%] mx-auto bg-white py-10">
+      <section className="w-full lg:mb-10 md:w-[80%] mx-auto bg-white py-10">
         <div className="max-w-5xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
           {/* Image Card */}
           <div className="w-full lg:w-1/2">

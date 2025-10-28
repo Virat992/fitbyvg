@@ -51,13 +51,13 @@ export default function Carousel({ cards }) {
     <div className="w-[95%] h-[370px] sm:h-[360px] my-2 px-3">
       <div
         ref={cardsRef}
-        className="flex overflow-x-auto gap-4 snap-x snap-mandatory px-1 scrollbar-hide scroll-smooth max-w-[600px] mx-auto"
+        className="flex lg:w-[560px] overflow-x-auto gap-4 snap-x snap-mandatory px-1 scrollbar-hide scroll-smooth max-w-[600px] mx-auto"
         onScroll={handleScroll}
       >
         {cards.map((card, index) => (
           <div
             key={index}
-            className="flex-shrink-0 w-full sm:w-[500px] md:w-full lg:w-[550px] h-90 px-0 snap-center rounded-3xl overflow-hidden shadow-md relative"
+            className="flex-shrink-0 w-full sm:w-[500px] md:w-full lg:w-[560px] h-90 px-0 snap-center rounded-3xl overflow-hidden shadow-md relative"
           >
             <img
               src={card.img}
