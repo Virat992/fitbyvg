@@ -13,7 +13,7 @@ import HealthHabits from "../components/onboarding/HealthHabits";
 import PhysicalInfo from "../components/onboarding/PhysicalInfo";
 import WeightLossBarriers from "../components/onboarding/WeightLossBarriers";
 
-import PARQForm from "../components/forms/ParqForm";
+import ParqForm from "../components/forms/ParqForm";
 import ACSMForm from "../components/forms/ACSMForm";
 import ConsentForm from "../components/forms/ConsentForm";
 import PreferencesForm from "../components/forms/PreferencesForm";
@@ -152,7 +152,7 @@ export default function Onboarding() {
       case STEPS.PHYSICAL_INFO:
         return <PhysicalInfo {...commonProps} />;
       case STEPS.PARQ_FORM:
-        return <PARQForm {...commonProps} />;
+        return <ParqForm {...commonProps} />;
       case STEPS.ACSM_FORM:
         return <ACSMForm {...commonProps} />;
       case STEPS.CONSENT_FORM:
