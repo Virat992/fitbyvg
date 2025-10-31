@@ -13,7 +13,7 @@ import HealthHabits from "../components/onboarding/HealthHabits";
 import PhysicalInfo from "../components/onboarding/PhysicalInfo";
 import WeightLossBarriers from "../components/onboarding/WeightLossBarriers";
 
-import PARQForm from "../components/forms/PARQForm";
+import PARQForm from "../components/forms/ParqForm";
 import ACSMForm from "../components/forms/ACSMForm";
 import ConsentForm from "../components/forms/ConsentForm";
 import PreferencesForm from "../components/forms/PreferencesForm";
