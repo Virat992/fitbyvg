@@ -87,7 +87,7 @@ export default function AdminInbox({ db, coachId }) {
   const isMobile = window.innerWidth < 768;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-w-5xl mx-auto bg-white shadow-md rounded-lg">
       {/* Mobile Tabs */}
       {isMobile && !selectedChat && (
         <div className="flex border-b">

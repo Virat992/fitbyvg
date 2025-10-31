@@ -955,7 +955,13 @@ export default function Dashboard() {
         }}
       >
         {isChatOpen && (
-          <div className="w-70 md:w-80 h-96 md:h-[26rem] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden mb-2">
+          <div
+  className={`${
+    user?.email === COACH_EMAIL
+      ? "w-[32rem] md:w-[40rem]" // 👈 Wider window for admin
+      : "w-[20rem] md:w-[22rem]" // 👈 Normal width for user
+  } h-96 md:h-[26rem] bg-white rounded-xl shadow-lg flex flex-col overflow-hidden mb-2 transition-all duration-300`}
+>
             {/* DRAG HANDLE */}
             <div
               ref={dragHandleRef}

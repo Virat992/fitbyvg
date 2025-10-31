@@ -100,7 +100,7 @@ export default function AdminChatWindow({
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-gray-50">
       {/* TOP FIXED USER INFO WITH BACK */}
-      <div className="fixed top-20 left-0 right-0 bg-white border-t border-b px-6 py-3 flex items-center justify-between z-50">
+      <div className="sticky top-0 bg-white border-b px-6 py-3 flex items-center justify-between z-10">
         {/* Left: Back Text */}
         <div
           className="text-cyan-600 font-semibold cursor-pointer"
@@ -131,7 +131,7 @@ export default function AdminChatWindow({
       </div>
 
       {/* SCROLLABLE MESSAGES AREA */}
-      <div className="flex-1 overflow-y-auto px-4 pt-18 pb-[50px]">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-[20px]">
         <div className="flex flex-col gap-3">
           {messages.map((m, index) => {
             const msgDate = m.createdAt?.toDate
@@ -176,7 +176,7 @@ export default function AdminChatWindow({
       </div>
 
       {/* BOTTOM FIXED INPUT */}
-      <div className="fixed bottom-14 left-0 right-0 bg-white flex items-center space-x-2 px-5 py-2 shadow-sm z-50">
+      <div className="sticky bottom-0 bg-white flex items-center space-x-2 px-5 py-2 shadow-sm z-10">
         <input
           value={newMsg}
           onChange={(e) => setNewMsg(e.target.value)}
