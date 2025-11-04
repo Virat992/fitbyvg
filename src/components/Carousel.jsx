@@ -42,7 +42,7 @@ export default function Carousel({ cards }) {
       }
 
       scrollToCard(nextIndex);
-    }, 53000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [currentCard, direction, cards.length]);
