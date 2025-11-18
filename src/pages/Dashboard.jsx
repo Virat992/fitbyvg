@@ -493,7 +493,7 @@ export default function Dashboard() {
         meals = {
           type: "diet",
           calories: data.consumedCalories || 0,
-          macros: data.consumedMacros || { protein: 0, carbs: 0, fat: 0 },
+          macros: data.consumedMacros || { protein: "Not logged", carbs: "Not logged", fat: "Not logged" },
           dailyLimit: data.dailyLimit || 0,
           list: data.meals || [],
         };
@@ -884,15 +884,15 @@ export default function Dashboard() {
                             : "text-red-600 font-semibold"
                         }
                       >
-                        {calendarDetails.meals.calories} /{" "}
-                        {calendarDetails.meals.dailyLimit || 0} kcal
+                        {Number(calendarDetails.meals.calories).toFixed(1)} /{" "}
+          {Number(calendarDetails.meals.dailyLimit || 0).toFixed(1)} kcal
                       </span>
                     </p>
                     <p>
-                      Protein: {calendarDetails.meals.macros.protein || 0} g
+                      Protein: {Number(calendarDetails.meals.macros.protein || 0).toFixed(1)} g
                     </p>
-                    <p>Carbs: {calendarDetails.meals.macros.carbs || 0} g</p>
-                    <p>Fats: {calendarDetails.meals.macros.fat || 0} g</p>
+                    <p>Carbs: {Number(calendarDetails.meals.macros.carbs || 0).toFixed(1)} g</p>
+                    <p>Fats: {Number(calendarDetails.meals.macros.fat || 0).toFixed(1)} g</p>
                   </div>
 
                   {/* Meals List */}
