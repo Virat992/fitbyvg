@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
 import { auth, db } from "../services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useEffect } from "react";
 
 import FormInput from "../components/FormInput";
 import Button from "../components/Button";
@@ -17,6 +18,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+  if (errors.reset || showResetSuccess) {
+    const timer = setTimeout(() => {
+      setErrors((prev) => ({ ...prev, reset: "" }));
+      setShowResetSuccess(false);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }
+}, [errors.reset, showResetSuccess]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -90,6 +102,52 @@ export default function Login() {
     }
   };
 
+ // 🔹 Forgot Password logic
+  
+const handleForgotPassword = async () => {
+  const trimmedEmail = email.trim().toLowerCase();
+
+  if (!trimmedEmail) {
+    return setErrors((prev) => ({
+      ...prev,
+      reset: "Please enter your email to reset password.",
+    }));
+  }
+
+  try {
+    setLoading(true);
+    setErrors((prev) => ({ ...prev, reset: "" }));
+    setShowResetSuccess(false);
+
+    // ✅ Directly send password reset email without checking if email exists
+    await sendPasswordResetEmail(auth, trimmedEmail);
+    setShowResetSuccess(true);
+  } catch (error) {
+    console.error("Password Reset Error:", error);
+
+    switch (error.code) {
+      case "auth/invalid-email":
+        setErrors((prev) => ({ ...prev, reset: "Invalid email format." }));
+        break;
+      case "auth/user-not-found":
+        // Firebase throws this when email not registered
+        setErrors((prev) => ({
+          ...prev,
+          reset: "No account found with this email.",
+        }));
+        break;
+      default:
+        setErrors((prev) => ({
+          ...prev,
+          reset: "Failed to send reset email. Try again later.",
+        }));
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   return (
     <div className=" md:w-full  w-full min-h-screen bg-cyan-50 flex flex-col items-center">
       <div className="w-full max-w-md md:max-w-lg mx-auto flex flex-col items-center">
@@ -110,25 +168,26 @@ export default function Login() {
 
         {/* Login Form Card */}
         <div className="w-full bg-white shadow-lg rounded-3xl lg:-mt-32 -mt-10 md:-mt-16 z-10 p-6 md:p-8 flex flex-col items-center max-w-[420px] md:max-w-[600px]">
+          
+          {/* Alerts (Forgot Password) */}
+          {(errors.reset || showResetSuccess) && (
+            <div className="w-full text-center mb-2">
+              {errors.reset && <AlertMessage message={errors.reset} />}
+                {showResetSuccess && (
+                  <AlertMessage
+                    message="Password reset email sent! Check your inbox."
+                    type="success"
+                  />
+              )}
+            </div>
+          )}
+          
           {/* Header */}
           <div className="flex items-center justify-center relative w-full mb-4">
             <p className="flex items-center gap-2 text-[20px] md:text-[24px] font-bold text-gray-800">
               Existing Member Login
             </p>
           </div>
-
-          {/* Alerts */}
-          {(errors.reset || showResetSuccess) && (
-            <div className="absolute top-2 left-0 w-full text-center z-10">
-              {errors.reset && <AlertMessage message={errors.reset} />}
-              {showResetSuccess && (
-                <AlertMessage
-                  message="Password reset email sent! Check your inbox."
-                  type="success"
-                />
-              )}
-            </div>
-          )}
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6 mt-3 w-full">
@@ -176,7 +235,7 @@ export default function Login() {
 
           <p
             className="text-cyan-600 font-bold text-sm md:text-base mt-5 cursor-pointer hover:underline text-center"
-            onClick={() => alert("Forgot password functionality")}
+            onClick={handleForgotPassword}
           >
             Forgot password?
           </p>

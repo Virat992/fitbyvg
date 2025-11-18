@@ -12,7 +12,6 @@ import WorkoutTemplates from "./pages/WorkoutTemplates.jsx";
 import AddWorkout from "./admin/AddWorkout.jsx";
 import FoodBuilder from "./admin/FoodBuilder.jsx";
 import LandingPagePc from "./pages/LandingPagePc.jsx";
-
 import DietDashboard from "./components/diet/DietDashboard.jsx";
 
 function App() {

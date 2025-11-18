@@ -331,10 +331,10 @@ export default function DietDashboard({ userId }) {
 
   // Calculate remaining macros
   const remainingMacros = {
-    protein: Math.max(macros.protein - consumedMacros.protein, 0),
-    carbs: Math.max(macros.carbs - consumedMacros.carbs, 0),
-    fat: Math.max(macros.fat - consumedMacros.fat, 0),
-  };
+  protein: Math.max(Number((macros.protein - consumedMacros.protein).toFixed(1)), 0),
+  carbs: Math.max(Number((macros.carbs - consumedMacros.carbs).toFixed(1)), 0),
+  fat: Math.max(Number((macros.fat - consumedMacros.fat).toFixed(1)), 0),
+};
 
   //Delete meal handler
   const handleDeleteMeal = async (mealId) => {
@@ -561,19 +561,19 @@ export default function DietDashboard({ userId }) {
                   {/* Center Text */}
                   <div className="absolute inset-0 grid place-items-center text-center pointer-events-none">
                     <div className="text-xs md:text-sm mt-7 font-bold text-white">
-                      {activeSegment === 0
-                        ? consumed
-                        : activeSegment === 1
-                        ? remaining
-                        : remaining}
-                      g
+                       {activeSegment === 0
+      ? consumed.toFixed(1)
+      : activeSegment === 1
+      ? remaining.toFixed(1)
+      : remaining.toFixed(1)}
+    g
                     </div>
                     <div className="text-[8px] md:text-xs text-white mb-10">
                       {activeSegment === 0
-                        ? "Consumed"
-                        : activeSegment === 1
-                        ? "Remaining"
-                        : "Remaining"}
+      ? "Consumed"
+      : activeSegment === 1
+      ? "Remaining"
+      : "Remaining"}
                     </div>
                   </div>
 
